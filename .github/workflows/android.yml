@@ -2,9 +2,9 @@ name: Android CI and Release
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
   push:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: write
@@ -27,10 +27,12 @@ jobs:
           java-version: "17"
 
       - name: Accept Android SDK licenses
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
 
       - name: Install Android SDK 35
-        run: "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"             "platforms;android-35"             "build-tools;35.0.0"             "platform-tools"
 
       - name: Make Gradle executable
         run: chmod +x gradlew
