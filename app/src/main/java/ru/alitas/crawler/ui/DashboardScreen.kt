@@ -19,7 +19,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,21 +30,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.alitas.crawler.domain.BatteryTelemetry
+import ru.alitas.crawler.domain.ConnectionStatus
 import ru.alitas.crawler.domain.CrawlerState
 import ru.alitas.crawler.domain.CrawlerTelemetry
 import ru.alitas.crawler.domain.Direction
+import ru.alitas.crawler.domain.DiscoveredCrawler
 
 @Composable
 fun DashboardScreen(
     telemetry: CrawlerTelemetry,
+    connectionStatus: ConnectionStatus,
+    selectedCrawler: DiscoveredCrawler?,
+    controlsEnabled: Boolean,
     onManualStart: (Direction) -> Unit,
     onManualStop: () -> Unit,
     onAutoStart: (Direction) -> Unit,
-    onStop: () -> Unit
+    onStop: () -> Unit,
+    onSimulateLoss: () -> Unit,
+    onChooseCrawler: () -> Unit
 ) {
-    val manualAllowed = telemetry.state == CrawlerState.WAITING ||
-        telemetry.state == CrawlerState.STOP
-    val autoAllowed = telemetry.state == CrawlerState.STOP
+    val manualAllowed = controlsEnabled &&
+        (telemetry.state == CrawlerState.WAITING || telemetry.state == CrawlerState.STOP)
+    val autoAllowed = controlsEnabled && telemetry.state == CrawlerState.STOP
 
     Column(
         modifier = Modifier
@@ -54,6 +60,8 @@ fun DashboardScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        ConnectionCard(connectionStatus, selectedCrawler)
+
         Card(shape = RoundedCornerShape(22.dp)) {
             Column(
                 Modifier
@@ -69,10 +77,21 @@ fun DashboardScreen(
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Black
                 )
-                Text(telemetry.name + " · " + telemetry.serialNumber, color = Color(0xFFDCE7FF))
                 Text(
-                    "BLE: " + telemetry.bleRssiDbm + " dBm",
-                    color = Color.White,
+                    selectedCrawler?.let { it.name + " · " + it.serialNumber }
+                        ?: telemetry.name + " · " + telemetry.serialNumber,
+                    color = Color(0xFFDCE7FF)
+                )
+                Text("RSSI: ${selectedCrawler?.rssi ?: telemetry.bleRssiDbm} dBm", color = Color.White)
+            }
+        }
+
+        if (!controlsEnabled) {
+            Card {
+                Text(
+                    "Реальное BLE-соединение установлено, но управляющие команды отключены до согласования UUID и протокола Контроллера.",
+                    modifier = Modifier.padding(16.dp),
+                    color = AlitasDanger,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -90,6 +109,7 @@ fun DashboardScreen(
         Sensor("Препятствие", telemetry.sensors.obstacle)
 
         Text("Ручное управление", fontWeight = FontWeight.Black)
+
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             HoldButton(
                 "↑",
@@ -125,10 +145,27 @@ fun DashboardScreen(
 
         Button(
             onClick = onStop,
+            enabled = controlsEnabled,
             colors = ButtonDefaults.buttonColors(containerColor = AlitasDanger),
             modifier = Modifier.fillMaxWidth().height(74.dp)
         ) {
             Text("STOP", fontSize = 28.sp, fontWeight = FontWeight.Black)
+        }
+
+        if (selectedCrawler?.isSimulator == true) {
+            OutlinedButton(
+                onClick = onSimulateLoss,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Симулировать потерю BLE")
+            }
+        }
+
+        OutlinedButton(
+            onClick = onChooseCrawler,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Отключиться и выбрать кроулер")
         }
 
         Card {
@@ -139,6 +176,40 @@ fun DashboardScreen(
                 Spacer(Modifier.height(8.dp))
                 Text("Экспозиция будет добавлена отдельным этапом с двухшаговым подтверждением.")
             }
+        }
+    }
+}
+
+@Composable
+private fun ConnectionCard(
+    status: ConnectionStatus,
+    crawler: DiscoveredCrawler?
+) {
+    val text = when (status) {
+        ConnectionStatus.DISCONNECTED -> "Отключено"
+        ConnectionStatus.SCANNING -> "Поиск..."
+        ConnectionStatus.CONNECTING -> "Подключение..."
+        ConnectionStatus.CONNECTED -> "BLE подключено"
+        ConnectionStatus.RECONNECTING -> "Переподключение..."
+        ConnectionStatus.LOST -> "Связь потеряна"
+    }
+
+    val color = when (status) {
+        ConnectionStatus.CONNECTED -> AlitasSuccess
+        ConnectionStatus.LOST, ConnectionStatus.DISCONNECTED -> AlitasDanger
+        else -> AlitasBlue
+    }
+
+    Card {
+        Row(
+            Modifier.fillMaxWidth().padding(14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(text, color = color, fontWeight = FontWeight.Black)
+                crawler?.let { Text(it.serialNumber, fontSize = 12.sp) }
+            }
+            Text(if (crawler?.isSimulator == true) "SIM" else "BLE", fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -230,7 +301,6 @@ private fun HoldButton(
                         try {
                             tryAwaitRelease()
                         } finally {
-                            // Критично: отпускание всегда завершает ручное движение.
                             onRelease()
                         }
                     }
