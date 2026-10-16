@@ -37,15 +37,19 @@ jobs:
 
       - name: Prepare release APK
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: cp app/build/outputs/apk/debug/app-debug.apk ALITAS-Crawler-v0.1.0-debug.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk ALITAS-Crawler-v0.2.0-debug.apk
 
-      - name: Create v0.1.0 pre-release if absent
+      - name: Create v0.2.0 pre-release if absent
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view v0.1.0 >/dev/null 2>&1; then
-            echo "Release v0.1.0 already exists"
+          if gh release view v0.2.0 >/dev/null 2>&1; then
+            echo "Release v0.2.0 already exists"
           else
-            gh release create v0.1.0 ALITAS-Crawler-v0.1.0-debug.apk               --target main               --title "АЛИТАС Кроулер v0.1.0"               --prerelease               --notes "Первая нативная Android-версия на Kotlin. Включает интерфейс оператора, mock-телеметрию и заготовку native BLE. Реальный протокол кроулера ещё не подключён."
+            gh release create v0.2.0 ALITAS-Crawler-v0.2.0-debug.apk \
+              --target main \
+              --title "АЛИТАС Кроулер v0.2.0" \
+              --prerelease \
+              --notes "Версия 0.2.0: экран поиска BLE-кроулеров, native BLE scan, подключение, 5-значный PIN, защищённое хранение PIN-верификатора через Android Keystore, блокировка после 3 неверных попыток, автоматическое переподключение и симуляция потери связи."
           fi
