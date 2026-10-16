@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "АЛИТАС Кроулер",
+    "slug": "alitas-crawler-control",
+    "version": "0.1.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+      "package": "ru.alitas.crawlercontrol",
+      "permissions": [
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT",
+        "ACCESS_FINE_LOCATION"
+      ]
+    }
+  }
+}
