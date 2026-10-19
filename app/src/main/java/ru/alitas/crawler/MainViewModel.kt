@@ -103,6 +103,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
         )
     }
 
+    /** Открыть журнал событий. */
+    fun openLogs() {
+        mutablePairing.value = mutablePairing.value.copy(
+            screen = AppScreen.LOGS
+        )
+    }
+
+    /** Открыть дополнительное меню. */
+    fun openMore() {
+        mutablePairing.value = mutablePairing.value.copy(
+            screen = AppScreen.MORE
+        )
+    }
+
     fun startScan() {
         if (!bleManager.isBluetoothEnabled()) {
             mutablePairing.value = mutablePairing.value.copy(

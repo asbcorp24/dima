@@ -27,7 +27,10 @@ import ru.alitas.crawler.ui.preview.PreviewTelemetry
 import ru.alitas.crawler.ui.theme.LitasTheme
 
 /**
- * Главное меню приложения ЛИТАС.
+ * Центральное меню приложения.
+ *
+ * После PIN оператор попадает сюда и уже отсюда открывает
+ * управление, диагностику, настройки, сервис и журнал.
  */
 @Composable
 fun HomeMenuScreen(
@@ -36,7 +39,9 @@ fun HomeMenuScreen(
     onControlClick: () -> Unit,
     onDiagnosticsClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onServiceClick: () -> Unit
+    onServiceClick: () -> Unit,
+    onLogsClick: () -> Unit,
+    onMoreClick: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -47,7 +52,7 @@ fun HomeMenuScreen(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(
+                        listOf(
                             Color(0xFF020612),
                             Color(0xFF030A18),
                             Color(0xFF061329)
@@ -62,7 +67,7 @@ fun HomeMenuScreen(
                     .padding(horizontal = 16.dp, vertical = 18.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                HomeHeader(connectionStatus = connectionStatus)
+                HomeHeader(connectionStatus)
 
                 CrawlerStatusCard(
                     telemetry = telemetry,
@@ -83,7 +88,7 @@ fun HomeMenuScreen(
                     HomeMenuCard(
                         title = "Диагностика",
                         subtitle = "Датчики и состояние",
-                        symbol = "▥",
+                        symbol = "∿",
                         modifier = Modifier.weight(1f),
                         onClick = onDiagnosticsClick
                     )
@@ -109,20 +114,20 @@ fun HomeMenuScreen(
                     )
                 }
 
-                HomeBottomBar()
+                HomeBottomBar(
+                    onHome = {},
+                    onControl = onControlClick,
+                    onLogs = onLogsClick,
+                    onMore = onMoreClick
+                )
             }
         }
     }
 }
 
-@Preview(
-    name = "Главное меню — телефон",
-    showBackground = true,
-    widthDp = 412,
-    heightDp = 915
-)
+@Preview(name = "Home — телефон", showBackground = true, widthDp = 412, heightDp = 915)
 @Composable
-private fun HomeMenuPhonePreview() {
+private fun HomePhonePreview() {
     LitasTheme {
         HomeMenuScreen(
             telemetry = PreviewTelemetry,
@@ -130,27 +135,9 @@ private fun HomeMenuPhonePreview() {
             onControlClick = {},
             onDiagnosticsClick = {},
             onSettingsClick = {},
-            onServiceClick = {}
-        )
-    }
-}
-
-@Preview(
-    name = "Главное меню — планшет",
-    showBackground = true,
-    widthDp = 1280,
-    heightDp = 800
-)
-@Composable
-private fun HomeMenuTabletPreview() {
-    LitasTheme {
-        HomeMenuScreen(
-            telemetry = PreviewTelemetry,
-            connectionStatus = ConnectionStatus.CONNECTED,
-            onControlClick = {},
-            onDiagnosticsClick = {},
-            onSettingsClick = {},
-            onServiceClick = {}
+            onServiceClick = {},
+            onLogsClick = {},
+            onMoreClick = {}
         )
     }
 }

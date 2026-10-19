@@ -1,5 +1,6 @@
 package ru.alitas.crawler.ui.screens.pin
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,13 +31,10 @@ import ru.alitas.crawler.ui.components.BrandHeader
 import ru.alitas.crawler.ui.components.InfoBox
 import ru.alitas.crawler.ui.components.PinField
 import ru.alitas.crawler.ui.preview.PreviewSimulatorCrawler
-import ru.alitas.crawler.ui.theme.LitasBackground
 import ru.alitas.crawler.ui.theme.LitasTheme
 
 /**
- * Страница первичного создания пятизначного PIN.
- *
- * Сохранение выполняет ViewModel. Экран отвечает только за ввод и отображение.
+ * Первичное создание пятизначного PIN.
  */
 @Composable
 fun PinSetupScreen(
@@ -46,8 +45,16 @@ fun PinSetupScreen(
     var pin by remember { mutableStateOf("") }
     var repeatPin by remember { mutableStateOf("") }
 
-    Surface(color = LitasBackground, modifier = Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
+    Surface(color = Color(0xFF030817), modifier = Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color(0xFF020612), Color(0xFF061329))
+                    )
+                )
+        ) {
             BrandHeader(
                 title = "Создание PIN",
                 subtitle = state.selectedCrawler?.serialNumber.orEmpty()
@@ -58,9 +65,8 @@ fun PinSetupScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1524)),
+                    shape = RoundedCornerShape(20.dp)
                 ) {
                     Column(
                         Modifier.fillMaxWidth().padding(18.dp),
@@ -89,8 +95,13 @@ fun PinSetupScreen(
                             modifier = Modifier.fillMaxWidth().height(54.dp),
                             shape = RoundedCornerShape(14.dp)
                         ) {
-                            Text("Сохранить и продолжить")
+                            Text("Сохранить PIN")
                         }
+
+                        Text(
+                            "PIN хранится в защищённом хранилище Android и привязывается к выбранному устройству.",
+                            color = Color(0xFF7088AA)
+                        )
                     }
                 }
 
@@ -99,7 +110,7 @@ fun PinSetupScreen(
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(14.dp)
                 ) {
-                    Text("Выбрать другой кроулер")
+                    Text("← Выбрать другой кроулер")
                 }
             }
         }
@@ -114,8 +125,7 @@ private fun PinSetupPreview() {
             state = PairingUiState(
                 screen = AppScreen.PIN_SETUP,
                 connectionStatus = ConnectionStatus.CONNECTED,
-                selectedCrawler = PreviewSimulatorCrawler,
-                statusMessage = "Первичное подключение"
+                selectedCrawler = PreviewSimulatorCrawler
             ),
             onSave = { _, _ -> },
             onBack = {}

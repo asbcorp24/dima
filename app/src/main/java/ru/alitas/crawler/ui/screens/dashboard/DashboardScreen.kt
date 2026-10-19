@@ -32,7 +32,6 @@ import ru.alitas.crawler.domain.Direction
 import ru.alitas.crawler.domain.DiscoveredCrawler
 import ru.alitas.crawler.ui.preview.PreviewSimulatorCrawler
 import ru.alitas.crawler.ui.preview.PreviewTelemetry
-import ru.alitas.crawler.ui.theme.LitasBackground
 import ru.alitas.crawler.ui.theme.LitasDanger
 import ru.alitas.crawler.ui.theme.LitasMuted
 import ru.alitas.crawler.ui.theme.LitasTheme
@@ -62,7 +61,7 @@ fun DashboardScreen(
     val autoAllowed = controlsEnabled && telemetry.state == CrawlerState.STOP
 
     Surface(
-        color = LitasBackground,
+        color = Color(0xFF030817),
         modifier = Modifier.fillMaxSize()
     ) {
         Column(
@@ -194,7 +193,7 @@ private fun ControlPanel(
 ) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color(0xFF0B1524)
         ),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(
@@ -209,6 +208,7 @@ private fun ControlPanel(
         ) {
             Text(
                 "Ручное движение",
+                color = Color.White,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Black
             )

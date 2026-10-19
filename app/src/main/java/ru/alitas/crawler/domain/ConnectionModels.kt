@@ -1,8 +1,5 @@
 package ru.alitas.crawler.domain
 
-/**
- * Текущее состояние BLE-соединения.
- */
 enum class ConnectionStatus {
     DISCONNECTED,
     SCANNING,
@@ -12,9 +9,6 @@ enum class ConnectionStatus {
     LOST
 }
 
-/**
- * Устройство, найденное во время BLE-сканирования.
- */
 data class DiscoveredCrawler(
     val id: String,
     val name: String,
@@ -24,10 +18,10 @@ data class DiscoveredCrawler(
 )
 
 /**
- * Все основные страницы приложения.
+ * Все экранные состояния приложения.
  *
- * При добавлении нового значения сюда необходимо добавить
- * соответствующую ветку в when(pairing.screen) в MainActivity.
+ * При добавлении нового экрана обязательно добавляйте ветку
+ * в when(pairing.screen) внутри MainActivity.
  */
 enum class AppScreen {
     SPLASH,
@@ -38,12 +32,11 @@ enum class AppScreen {
     DASHBOARD,
     DIAGNOSTICS,
     SETTINGS,
-    SERVICE
+    SERVICE,
+    LOGS,
+    MORE
 }
 
-/**
- * Состояние интерфейса подключения.
- */
 data class PairingUiState(
     val screen: AppScreen = AppScreen.SEARCH,
     val connectionStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED,

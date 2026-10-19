@@ -22,7 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,20 +36,15 @@ import ru.alitas.crawler.ui.components.BleStatusBanner
 import ru.alitas.crawler.ui.components.BrandHeader
 import ru.alitas.crawler.ui.preview.PreviewRealCrawler
 import ru.alitas.crawler.ui.preview.PreviewSimulatorCrawler
-import ru.alitas.crawler.ui.theme.LitasBackground
 import ru.alitas.crawler.ui.theme.LitasBlue
-import ru.alitas.crawler.ui.theme.LitasBlueSoft
+import ru.alitas.crawler.ui.theme.LitasCyan
 import ru.alitas.crawler.ui.theme.LitasDanger
-import ru.alitas.crawler.ui.theme.LitasMuted
 import ru.alitas.crawler.ui.theme.LitasSuccess
 import ru.alitas.crawler.ui.theme.LitasTheme
 import ru.alitas.crawler.ui.theme.LitasWarning
 
 /**
- * Страница поиска и выбора BLE-кроулера.
- *
- * Экран не работает с Bluetooth API напрямую: состояние и действия приходят параметрами.
- * Поэтому страницу можно независимо редактировать, тестировать и смотреть через Preview.
+ * Поиск и выбор BLE-кроулера в едином тёмном стиле приложения.
  */
 @Composable
 fun SearchCrawlerScreen(
@@ -58,9 +53,17 @@ fun SearchCrawlerScreen(
     onStopScan: () -> Unit,
     onSelect: (DiscoveredCrawler) -> Unit
 ) {
-    Surface(color = LitasBackground, modifier = Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
-            BrandHeader("Подключение", "Найдите и выберите BLE-кроулер")
+    Surface(color = Color(0xFF030817), modifier = Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color(0xFF020612), Color(0xFF061329))
+                    )
+                )
+        ) {
+            BrandHeader("Поиск кроулеров", "BLE · локальное подключение")
 
             Column(
                 modifier = Modifier.fillMaxSize().padding(horizontal = 18.dp, vertical = 16.dp),
@@ -73,18 +76,22 @@ fun SearchCrawlerScreen(
                         onClick = onScan,
                         modifier = Modifier.weight(1f).height(52.dp),
                         shape = RoundedCornerShape(14.dp)
-                    ) { Text("Найти устройства") }
+                    ) {
+                        Text("Сканировать")
+                    }
 
                     OutlinedButton(
                         onClick = onStopScan,
                         modifier = Modifier.weight(1f).height(52.dp),
                         shape = RoundedCornerShape(14.dp)
-                    ) { Text("Остановить") }
+                    ) {
+                        Text("Остановить")
+                    }
                 }
 
                 Text(
                     "ДОСТУПНЫЕ УСТРОЙСТВА",
-                    color = LitasMuted,
+                    color = Color(0xFF6F89AD),
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp
                 )
@@ -94,7 +101,7 @@ fun SearchCrawlerScreen(
                 } else {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         items(state.devices, key = { it.id }) { device ->
-                            CrawlerDeviceCard(device = device, onClick = { onSelect(device) })
+                            CrawlerDeviceCard(device) { onSelect(device) }
                         }
                     }
                 }
@@ -103,36 +110,33 @@ fun SearchCrawlerScreen(
     }
 }
 
-/** Пустое состояние списка устройств. */
 @Composable
 private fun EmptyDevices() {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(18.dp),
-        border = CardDefaults.outlinedCardBorder()
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1524)),
+        shape = RoundedCornerShape(18.dp)
     ) {
         Column(
             Modifier.fillMaxWidth().padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text("BLE", color = LitasBlue, fontSize = 28.sp, fontWeight = FontWeight.Black)
-            Text("Устройства пока не найдены", fontWeight = FontWeight.Bold)
+            Text("BLE", color = LitasCyan, fontSize = 28.sp, fontWeight = FontWeight.Black)
+            Text("Устройства пока не найдены", color = Color.White, fontWeight = FontWeight.Bold)
             Text(
-                "Нажмите «Найти устройства» и убедитесь, что Bluetooth включён.",
-                color = LitasMuted
+                "Нажмите «Сканировать» и убедитесь, что Bluetooth включён.",
+                color = Color(0xFF7189AA)
             )
         }
     }
 }
 
-/** Карточка одного найденного устройства. */
 @Composable
 private fun CrawlerDeviceCard(device: DiscoveredCrawler, onClick: () -> Unit) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().shadow(2.dp, RoundedCornerShape(18.dp)),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1728)),
         shape = RoundedCornerShape(18.dp)
     ) {
         Row(
@@ -144,22 +148,22 @@ private fun CrawlerDeviceCard(device: DiscoveredCrawler, onClick: () -> Unit) {
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        if (device.isSimulator) Color(0xFFEAF8F2) else LitasBlueSoft,
+                        if (device.isSimulator) Color(0xFF0D3028) else Color(0xFF0C2B59),
                         RoundedCornerShape(14.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     if (device.isSimulator) "SIM" else "BLE",
-                    color = if (device.isSimulator) LitasSuccess else LitasBlue,
+                    color = if (device.isSimulator) LitasSuccess else LitasCyan,
                     fontWeight = FontWeight.Black,
                     fontSize = 12.sp
                 )
             }
 
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(device.name, fontWeight = FontWeight.Black, fontSize = 17.sp)
-                Text(device.serialNumber, color = LitasMuted, fontSize = 13.sp)
+                Text(device.name, color = Color.White, fontWeight = FontWeight.Black, fontSize = 17.sp)
+                Text(device.serialNumber, color = Color(0xFF7189AA), fontSize = 13.sp)
                 if (device.isSimulator) {
                     Text("Режим симуляции", color = LitasSuccess, fontWeight = FontWeight.Bold)
                 }
@@ -183,7 +187,7 @@ private fun signalColor(rssi: Int): Color = when {
     else -> LitasDanger
 }
 
-@Preview(name = "Поиск BLE — телефон", showBackground = true, widthDp = 412, heightDp = 915)
+@Preview(name = "Поиск BLE", showBackground = true, widthDp = 412, heightDp = 915)
 @Composable
 private fun SearchCrawlerPreview() {
     LitasTheme {
@@ -193,24 +197,6 @@ private fun SearchCrawlerPreview() {
                 connectionStatus = ConnectionStatus.DISCONNECTED,
                 devices = listOf(PreviewSimulatorCrawler, PreviewRealCrawler),
                 statusMessage = "Bluetooth готов"
-            ),
-            onScan = {},
-            onStopScan = {},
-            onSelect = {}
-        )
-    }
-}
-
-@Preview(name = "Поиск BLE — сканирование", showBackground = true, widthDp = 412, heightDp = 915)
-@Composable
-private fun SearchCrawlerScanningPreview() {
-    LitasTheme {
-        SearchCrawlerScreen(
-            state = PairingUiState(
-                screen = AppScreen.SEARCH,
-                connectionStatus = ConnectionStatus.SCANNING,
-                devices = listOf(PreviewSimulatorCrawler),
-                statusMessage = "Поиск BLE-кроулеров..."
             ),
             onScan = {},
             onStopScan = {},

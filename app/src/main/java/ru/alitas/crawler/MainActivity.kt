@@ -11,12 +11,16 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.alitas.crawler.domain.AppScreen
-import ru.alitas.crawler.ui.screens.common.PlaceholderScreen
 import ru.alitas.crawler.ui.screens.dashboard.DashboardScreen
+import ru.alitas.crawler.ui.screens.diagnostics.DiagnosticsScreen
 import ru.alitas.crawler.ui.screens.home.HomeMenuScreen
+import ru.alitas.crawler.ui.screens.logs.LogsScreen
+import ru.alitas.crawler.ui.screens.more.MoreScreen
 import ru.alitas.crawler.ui.screens.pin.PinSetupScreen
 import ru.alitas.crawler.ui.screens.pin.PinUnlockScreen
 import ru.alitas.crawler.ui.screens.search.SearchCrawlerScreen
+import ru.alitas.crawler.ui.screens.service.ServiceScreen
+import ru.alitas.crawler.ui.screens.settings.SettingsScreen
 import ru.alitas.crawler.ui.screens.splash.SplashScreen
 import ru.alitas.crawler.ui.theme.LitasTheme
 
@@ -104,7 +108,9 @@ class MainActivity : ComponentActivity() {
                             onControlClick = vm::openDashboard,
                             onDiagnosticsClick = vm::openDiagnostics,
                             onSettingsClick = vm::openSettings,
-                            onServiceClick = vm::openService
+                            onServiceClick = vm::openService,
+                            onLogsClick = vm::openLogs,
+                            onMoreClick = vm::openMore
                         )
                     }
 
@@ -125,23 +131,42 @@ class MainActivity : ComponentActivity() {
                     }
 
                     AppScreen.DIAGNOSTICS -> {
-                        PlaceholderScreen(
-                            title = "Диагностика",
+                        DiagnosticsScreen(
+                            telemetry = telemetry,
+                            connectionStatus = pairing.connectionStatus,
                             onBack = vm::openHome
                         )
                     }
 
                     AppScreen.SETTINGS -> {
-                        PlaceholderScreen(
-                            title = "Настройки",
+                        SettingsScreen(
+                            connectionStatus = pairing.connectionStatus,
                             onBack = vm::openHome
                         )
                     }
 
                     AppScreen.SERVICE -> {
-                        PlaceholderScreen(
-                            title = "Сервис",
+                        ServiceScreen(
+                            connectionStatus = pairing.connectionStatus,
                             onBack = vm::openHome
+                        )
+                    }
+
+                    AppScreen.LOGS -> {
+                        LogsScreen(
+                            telemetry = telemetry,
+                            connectionStatus = pairing.connectionStatus,
+                            onBack = vm::openHome
+                        )
+                    }
+
+                    AppScreen.MORE -> {
+                        MoreScreen(
+                            connectionStatus = pairing.connectionStatus,
+                            onBack = vm::openHome,
+                            onLogs = vm::openLogs,
+                            onSettings = vm::openSettings,
+                            onService = vm::openService
                         )
                     }
                 }

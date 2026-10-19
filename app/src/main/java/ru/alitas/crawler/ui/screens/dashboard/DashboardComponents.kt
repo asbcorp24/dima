@@ -183,7 +183,7 @@ internal fun MetricCard(
 ) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1524)),
         shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -193,7 +193,7 @@ internal fun MetricCard(
         ) {
             Text(title, color = LitasMuted, fontSize = 12.sp)
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(value, fontSize = 22.sp, fontWeight = FontWeight.Black, color = LitasInk)
+                Text(value, fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White)
                 Spacer(Modifier.width(3.dp))
                 Text(unit, color = LitasMuted, fontSize = 12.sp)
             }
@@ -204,7 +204,7 @@ internal fun MetricCard(
 @Composable
 internal fun BatteryCard(title: String, value: BatteryTelemetry) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1524)),
         shape = RoundedCornerShape(18.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -218,7 +218,7 @@ internal fun BatteryCard(title: String, value: BatteryTelemetry) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(title, fontWeight = FontWeight.Black)
+                    Text(title, color = Color.White, fontWeight = FontWeight.Black)
                     Text(
                         "%.1f В · %.1f А · %d °C".format(
                             value.voltage,
@@ -242,7 +242,7 @@ internal fun BatteryCard(title: String, value: BatteryTelemetry) {
                 progress = { value.soc.coerceIn(0, 100) / 100f },
                 modifier = Modifier.fillMaxWidth().height(8.dp),
                 color = batteryColor(value.soc),
-                trackColor = Color(0xFFE8EDF5)
+                trackColor = Color(0xFF20314A)
             )
         }
     }
@@ -267,7 +267,7 @@ private fun SensorCard(label: String, active: Boolean, modifier: Modifier = Modi
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(
-            containerColor = if (active) Color(0xFFFFEEEE) else Color.White
+            containerColor = if (active) Color(0xFF34161C) else Color(0xFF0B1524)
         ),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -287,7 +287,7 @@ private fun SensorCard(label: String, active: Boolean, modifier: Modifier = Modi
             )
 
             Column {
-                Text(label, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text(label, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Text(
                     if (active) "СРАБОТАЛ" else "Норма",
                     color = if (active) LitasDanger else LitasSuccess,
@@ -302,12 +302,12 @@ private fun SensorCard(label: String, active: Boolean, modifier: Modifier = Modi
 @Composable
 internal fun WarningCard(title: String, message: String) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF2E8)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2113)),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(Modifier.fillMaxWidth().padding(15.dp)) {
             Text(title, color = LitasWarning, fontWeight = FontWeight.Black)
-            Text(message, color = LitasInk, style = MaterialTheme.typography.bodyMedium)
+            Text(message, color = Color(0xFFE8D8B8), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -315,7 +315,7 @@ internal fun WarningCard(title: String, message: String) {
 @Composable
 internal fun XRayCard(telemetry: CrawlerTelemetry) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1524)),
         shape = RoundedCornerShape(20.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -356,7 +356,7 @@ internal fun XRayCard(telemetry: CrawlerTelemetry) {
 @Composable
 private fun MiniValue(value: String, unit: String) {
     Column(horizontalAlignment = Alignment.End) {
-        Text(value, fontSize = 19.sp, fontWeight = FontWeight.Black)
+        Text(value, color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.Black)
         Text(unit, color = LitasMuted, fontSize = 11.sp)
     }
 }

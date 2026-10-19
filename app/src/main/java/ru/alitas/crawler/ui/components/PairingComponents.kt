@@ -30,50 +30,51 @@ import androidx.compose.ui.unit.sp
 import ru.alitas.crawler.domain.ConnectionStatus
 import ru.alitas.crawler.domain.PairingUiState
 import ru.alitas.crawler.ui.theme.LitasBlue
-import ru.alitas.crawler.ui.theme.LitasBlueDark
-import ru.alitas.crawler.ui.theme.LitasBlueSoft
+import ru.alitas.crawler.ui.theme.LitasCyan
 import ru.alitas.crawler.ui.theme.LitasDanger
-import ru.alitas.crawler.ui.theme.LitasInk
-import ru.alitas.crawler.ui.theme.LitasMuted
 import ru.alitas.crawler.ui.theme.LitasSuccess
 
 /**
- * Общая фирменная шапка экранов подключения и PIN.
+ * Тёмная фирменная шапка экранов подключения и PIN.
  */
 @Composable
 fun BrandHeader(title: String, subtitle: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Brush.horizontalGradient(listOf(LitasBlueDark, LitasBlue)))
-            .padding(horizontal = 20.dp, vertical = 22.dp)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                "ЛИТАС",
-                color = Color.White,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Black,
-                letterSpacing = 1.5.sp
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color(0xFF020612), Color(0xFF071B3A))
+                )
             )
-            Text(title, color = Color.White, style = MaterialTheme.typography.headlineSmall)
-            Text(subtitle, color = Color(0xFFD8E6FF), style = MaterialTheme.typography.bodyMedium)
+            .padding(horizontal = 20.dp, vertical = 20.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            LitasLogo(Modifier.size(42.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    "ЛИТАС",
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black
+                )
+                Text(title, color = Color.White, style = MaterialTheme.typography.titleLarge)
+                Text(subtitle, color = Color(0xFF7893B7), style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }
 
-/**
- * Статусный блок BLE. Используется на экране поиска устройств.
- */
 @Composable
 fun BleStatusBanner(state: PairingUiState) {
     val scanning = state.connectionStatus == ConnectionStatus.SCANNING
+
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = if (scanning) LitasBlueSoft else Color.White
-        ),
-        shape = RoundedCornerShape(16.dp),
-        border = CardDefaults.outlinedCardBorder()
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1728)),
+        shape = RoundedCornerShape(18.dp)
     ) {
         Row(
             Modifier.fillMaxWidth().padding(14.dp),
@@ -81,7 +82,11 @@ fun BleStatusBanner(state: PairingUiState) {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (scanning) {
-                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 3.dp)
+                CircularProgressIndicator(
+                    modifier = Modifier.size(26.dp),
+                    strokeWidth = 3.dp,
+                    color = LitasCyan
+                )
             } else {
                 Box(
                     Modifier
@@ -93,11 +98,12 @@ fun BleStatusBanner(state: PairingUiState) {
             Column(Modifier.weight(1f)) {
                 Text(
                     if (scanning) "Поиск BLE-кроулеров" else "Bluetooth готов",
+                    color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    state.statusMessage ?: "Выберите устройство из списка ниже",
-                    color = LitasMuted,
+                    state.statusMessage ?: "Выберите устройство из списка",
+                    color = Color(0xFF7890B0),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -105,28 +111,25 @@ fun BleStatusBanner(state: PairingUiState) {
     }
 }
 
-/**
- * Универсальный информационный/ошибочный блок для небольших сообщений.
- */
 @Composable
 fun InfoBox(title: String, text: String, danger: Boolean = false) {
-    val background = if (danger) Color(0xFFFFEEEE) else LitasBlueSoft
-    val accent = if (danger) LitasDanger else LitasBlue
-
     Card(
-        colors = CardDefaults.cardColors(containerColor = background),
+        colors = CardDefaults.cardColors(
+            containerColor = if (danger) Color(0xFF35161D) else Color(0xFF0D213C)
+        ),
         shape = RoundedCornerShape(14.dp)
     ) {
         Column(Modifier.fillMaxWidth().padding(14.dp)) {
-            Text(title, color = accent, fontWeight = FontWeight.Black)
-            Text(text, color = LitasInk, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                title,
+                color = if (danger) Color(0xFFFF6B75) else LitasCyan,
+                fontWeight = FontWeight.Black
+            )
+            Text(text, color = Color(0xFFC3D1E5), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
-/**
- * Стандартное поле пятизначного PIN.
- */
 @Composable
 fun PinField(
     label: String,
@@ -144,7 +147,12 @@ fun PinField(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = LitasBlue,
-            focusedLabelColor = LitasBlue
+            focusedLabelColor = LitasCyan,
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White,
+            unfocusedBorderColor = Color(0xFF294462),
+            unfocusedLabelColor = Color(0xFF7C92B0),
+            disabledTextColor = Color(0xFF677990)
         ),
         shape = RoundedCornerShape(14.dp),
         modifier = Modifier.fillMaxWidth()

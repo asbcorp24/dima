@@ -1,5 +1,6 @@
 package ru.alitas.crawler.ui.screens.pin
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,14 +33,10 @@ import ru.alitas.crawler.ui.components.BrandHeader
 import ru.alitas.crawler.ui.components.InfoBox
 import ru.alitas.crawler.ui.components.PinField
 import ru.alitas.crawler.ui.preview.PreviewSimulatorCrawler
-import ru.alitas.crawler.ui.theme.LitasBackground
-import ru.alitas.crawler.ui.theme.LitasMuted
 import ru.alitas.crawler.ui.theme.LitasTheme
 
 /**
- * Страница разблокировки уже привязанного кроулера.
- *
- * Счётчик попыток и таймер блокировки находятся в ViewModel.
+ * Разблокировка уже привязанного кроулера.
  */
 @Composable
 fun PinUnlockScreen(
@@ -48,10 +46,18 @@ fun PinUnlockScreen(
 ) {
     var pin by remember { mutableStateOf("") }
 
-    Surface(color = LitasBackground, modifier = Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
+    Surface(color = Color(0xFF030817), modifier = Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color(0xFF020612), Color(0xFF061329))
+                    )
+                )
+        ) {
             BrandHeader(
-                title = "Доступ к кроулеру",
+                title = "Ввод PIN",
                 subtitle = state.selectedCrawler?.serialNumber.orEmpty()
             )
 
@@ -60,28 +66,28 @@ fun PinUnlockScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1524)),
+                    shape = RoundedCornerShape(20.dp)
                 ) {
                     Column(
                         Modifier.fillMaxWidth().padding(18.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        state.pinError?.let {
-                            InfoBox("Ошибка PIN", it, danger = true)
-                        }
-
                         Text(
                             "Введите PIN",
+                            color = Color.White,
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Black
                         )
 
                         Text(
-                            "Для управления кроулером требуется подтверждение доступа.",
-                            color = LitasMuted
+                            "Введите пятизначный PIN для доступа к управлению.",
+                            color = Color(0xFF7088AA)
                         )
+
+                        state.pinError?.let {
+                            InfoBox("Ошибка PIN", it, danger = true)
+                        }
 
                         PinField(
                             label = "5-значный PIN",
@@ -120,7 +126,7 @@ fun PinUnlockScreen(
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(14.dp)
                 ) {
-                    Text("Выбрать другой кроулер")
+                    Text("← Выбрать другой кроулер")
                 }
             }
         }
@@ -135,8 +141,7 @@ private fun PinUnlockPreview() {
             state = PairingUiState(
                 screen = AppScreen.PIN_UNLOCK,
                 connectionStatus = ConnectionStatus.CONNECTED,
-                selectedCrawler = PreviewSimulatorCrawler,
-                statusMessage = "Введите PIN кроулера"
+                selectedCrawler = PreviewSimulatorCrawler
             ),
             onUnlock = {},
             onBack = {}
