@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Цвет фона фирменной иконки ЛИТАС. -->
+    <color name="litas_launcher_background">#06245F</color>
+</resources>

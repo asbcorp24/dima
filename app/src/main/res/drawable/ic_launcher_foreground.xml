@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!--
+        Фирменный знак ЛИТАС.
+        Геометрия повторяет загруженную пользователем иконку:
+        два направленных друг к другу шеврона.
+    -->
+    <path
+        android:fillColor="#27C7FF"
+        android:pathData="M22,49 L22,45 L45,22 L63,22 L86,45 L86,49 L76,49 L59,32 L49,32 L32,49 Z" />
+
+    <path
+        android:fillColor="#1687FF"
+        android:pathData="M22,57 L32,57 L49,74 L59,74 L76,57 L86,57 L86,61 L63,84 L45,84 L22,61 Z" />
+</vector>

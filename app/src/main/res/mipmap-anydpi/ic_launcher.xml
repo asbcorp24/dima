@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Тёмно-синий скруглённый корпус иконки. -->
+    <path
+        android:fillColor="#06245F"
+        android:pathData="M18,4 C10.3,4 4,10.3 4,18 L4,90 C4,97.7 10.3,104 18,104 L90,104 C97.7,104 104,97.7 104,90 L104,18 C104,10.3 97.7,4 90,4 Z" />
+
+    <!-- Верхний шеврон фирменного знака. -->
+    <path
+        android:fillColor="#27C7FF"
+        android:pathData="M22,49 L22,45 L45,22 L63,22 L86,45 L86,49 L76,49 L59,32 L49,32 L32,49 Z" />
+
+    <!-- Нижний шеврон фирменного знака. -->
+    <path
+        android:fillColor="#1687FF"
+        android:pathData="M22,57 L32,57 L49,74 L59,74 L76,57 L86,57 L86,61 L63,84 L45,84 L22,61 Z" />
+</vector>
