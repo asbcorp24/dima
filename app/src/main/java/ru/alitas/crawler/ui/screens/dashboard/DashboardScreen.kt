@@ -69,7 +69,8 @@ fun DashboardScreen(
     onChooseCrawler: () -> Unit,
     onHome: () -> Unit,
     onLogs: () -> Unit,
-    onMore: () -> Unit
+    onMore: () -> Unit,
+    onXRay: () -> Unit
 ) {
     val manualAllowed = controlsEnabled &&
         (telemetry.state == CrawlerState.WAITING || telemetry.state == CrawlerState.STOP)
@@ -185,7 +186,10 @@ fun DashboardScreen(
                     )
 
                     SectionTitle("РЕНТГЕНОВСКИЙ АППАРАТ")
-                    XRayCard(telemetry)
+                    XRayCard(
+                        telemetry = telemetry,
+                        onOpen = onXRay
+                    )
 
                     if (selectedCrawler?.isSimulator == true) {
                         OutlinedButton(
@@ -367,7 +371,8 @@ private fun DashboardPhonePreview() {
             onChooseCrawler = {},
             onHome = {},
             onLogs = {},
-            onMore = {}
+            onMore = {},
+            onXRay = {}
         )
     }
 }
@@ -396,7 +401,8 @@ private fun DashboardTabletPreview() {
             onChooseCrawler = {},
             onHome = {},
             onLogs = {},
-            onMore = {}
+            onMore = {},
+            onXRay = {}
         )
     }
 }

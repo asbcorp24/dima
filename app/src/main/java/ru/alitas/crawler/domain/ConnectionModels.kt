@@ -30,6 +30,7 @@ enum class AppScreen {
     PIN_UNLOCK,
     HOME,
     DASHBOARD,
+    XRAY,
     DIAGNOSTICS,
     SETTINGS,
     SERVICE,

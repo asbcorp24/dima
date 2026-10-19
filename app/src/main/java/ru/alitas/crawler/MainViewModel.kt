@@ -82,6 +82,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
         )
     }
 
+    /** Открыть экран рентгеновского узла. */
+    fun openXRay() {
+        mutablePairing.value = mutablePairing.value.copy(
+            screen = AppScreen.XRAY
+        )
+    }
+
     /** Открыть диагностику. */
     fun openDiagnostics() {
         mutablePairing.value = mutablePairing.value.copy(

@@ -22,6 +22,7 @@ import ru.alitas.crawler.ui.screens.search.SearchCrawlerScreen
 import ru.alitas.crawler.ui.screens.service.ServiceScreen
 import ru.alitas.crawler.ui.screens.settings.SettingsScreen
 import ru.alitas.crawler.ui.screens.splash.SplashScreen
+import ru.alitas.crawler.ui.screens.xray.XRayScreen
 import ru.alitas.crawler.ui.theme.LitasTheme
 
 /**
@@ -128,7 +129,18 @@ class MainActivity : ComponentActivity() {
                             onChooseCrawler = vm::backToSearch,
                             onHome = vm::openHome,
                             onLogs = vm::openLogs,
-                            onMore = vm::openMore
+                            onMore = vm::openMore,
+                            onXRay = vm::openXRay
+                        )
+                    }
+
+                    AppScreen.XRAY -> {
+                        XRayScreen(
+                            telemetry = telemetry,
+                            connectionStatus = pairing.connectionStatus,
+                            simulatorMode = pairing.selectedCrawler?.isSimulator == true,
+                            onStop = vm::stop,
+                            onBack = vm::openDashboard
                         )
                     }
 

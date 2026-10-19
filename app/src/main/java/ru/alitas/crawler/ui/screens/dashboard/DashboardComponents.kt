@@ -279,7 +279,7 @@ internal fun CompactBatteryCard(
                 verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    "\${value.soc}%",
+                    "${value.soc}%",
                     color = batteryColor(value.soc),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Black
@@ -377,7 +377,10 @@ internal fun WarningCard(title: String, message: String) {
 }
 
 @Composable
-internal fun XRayCard(telemetry: CrawlerTelemetry) {
+internal fun XRayCard(
+    telemetry: CrawlerTelemetry,
+    onOpen: () -> Unit
+) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1524)),
         shape = RoundedCornerShape(20.dp),
@@ -409,10 +412,20 @@ internal fun XRayCard(telemetry: CrawlerTelemetry) {
             }
 
             Text(
-                "Экспозиция будет добавлена отдельным этапом с двухшаговым подтверждением.",
+                "Откройте отдельный экран рентгеновского узла для проверки состояния, параметров и безопасного двухэтапного подтверждения.",
                 color = LitasMuted,
                 style = MaterialTheme.typography.bodyMedium
             )
+
+            androidx.compose.material3.OutlinedButton(
+                onClick = onOpen,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text("Открыть рентгеновский узел")
+            }
         }
     }
 }
