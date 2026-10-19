@@ -23,6 +23,12 @@ import ru.alitas.crawler.domain.DiscoveredCrawler
 import ru.alitas.crawler.domain.PairingUiState
 import ru.alitas.crawler.security.PinSecureStore
 
+/**
+ * Главная ViewModel приложения.
+ *
+ * Здесь находятся BLE, PIN, навигационное состояние и команды управления.
+ * UI-экраны получают только готовое состояние и callback-функции.
+ */
 class MainViewModel(application: Application) : AndroidViewModel(application),
     CrawlerBleManager.Listener {
 
@@ -32,7 +38,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
 
     val telemetry: StateFlow<CrawlerTelemetry> = transport.telemetry
 
-    private val mutablePairing = MutableStateFlow(PairingUiState())
+    // При запуске приложения сначала показываем Splash.
+    private val mutablePairing = MutableStateFlow(
+        PairingUiState(
+            screen = AppScreen.SPLASH
+        )
+    )
     val pairing: StateFlow<PairingUiState> = mutablePairing.asStateFlow()
 
     private var scanCallback: ScanCallback? = null
@@ -46,6 +57,50 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
         bleManager.setListener(this)
         viewModelScope.launch { transport.connect() }
         addSimulator()
+    }
+
+    /**
+     * Splash завершён — переходим к поиску устройства.
+     */
+    fun finishSplash() {
+        mutablePairing.value = mutablePairing.value.copy(
+            screen = AppScreen.SEARCH
+        )
+    }
+
+    /** Открыть главное меню. */
+    fun openHome() {
+        mutablePairing.value = mutablePairing.value.copy(
+            screen = AppScreen.HOME
+        )
+    }
+
+    /** Открыть непосредственное управление. */
+    fun openDashboard() {
+        mutablePairing.value = mutablePairing.value.copy(
+            screen = AppScreen.DASHBOARD
+        )
+    }
+
+    /** Открыть диагностику. */
+    fun openDiagnostics() {
+        mutablePairing.value = mutablePairing.value.copy(
+            screen = AppScreen.DIAGNOSTICS
+        )
+    }
+
+    /** Открыть настройки. */
+    fun openSettings() {
+        mutablePairing.value = mutablePairing.value.copy(
+            screen = AppScreen.SETTINGS
+        )
+    }
+
+    /** Открыть сервисный раздел. */
+    fun openService() {
+        mutablePairing.value = mutablePairing.value.copy(
+            screen = AppScreen.SERVICE
+        )
     }
 
     fun startScan() {
@@ -97,6 +152,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
     fun stopScan() {
         bleManager.stopScan(scanCallback)
         scanCallback = null
+
         if (mutablePairing.value.connectionStatus == ConnectionStatus.SCANNING) {
             mutablePairing.value = mutablePairing.value.copy(
                 connectionStatus = ConnectionStatus.DISCONNECTED,
@@ -108,6 +164,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
     fun selectCrawler(crawler: DiscoveredCrawler) {
         stopScan()
         userRequestedDisconnect = false
+
         mutablePairing.value = mutablePairing.value.copy(
             selectedCrawler = crawler,
             connectionStatus = ConnectionStatus.CONNECTING,
@@ -125,6 +182,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
 
         selectedBluetoothDevice = findDevice(crawler.id)
         val device = selectedBluetoothDevice
+
         if (device == null) {
             mutablePairing.value = mutablePairing.value.copy(
                 connectionStatus = ConnectionStatus.DISCONNECTED,
@@ -146,13 +204,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
 
     private fun onLogicalConnected(crawler: DiscoveredCrawler) {
         val hasPin = pinStore.hasPin(crawler.id)
+
         mutablePairing.value = mutablePairing.value.copy(
             connectionStatus = ConnectionStatus.CONNECTED,
             screen = if (hasPin) AppScreen.PIN_UNLOCK else AppScreen.PIN_SETUP,
-            statusMessage = if (hasPin)
+            statusMessage = if (hasPin) {
                 "Введите PIN кроулера"
-            else
+            } else {
                 "Первичное подключение: задайте 5-значный PIN"
+            }
         )
     }
 
@@ -160,17 +220,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
         val crawler = mutablePairing.value.selectedCrawler ?: return
 
         when {
-            !pin.matches(Regex("\\d{5}")) ->
+            !pin.matches(Regex("\\d{5}")) -> {
                 setPinError("PIN должен состоять ровно из 5 цифр")
+            }
 
-            pin != repeatPin ->
+            pin != repeatPin -> {
                 setPinError("PIN-коды не совпадают")
+            }
 
             else -> {
                 pinStore.savePin(crawler.id, pin)
                 failedPinAttempts = 0
+
+                // После успешного создания PIN открываем новое Home-меню.
                 mutablePairing.value = mutablePairing.value.copy(
-                    screen = AppScreen.DASHBOARD,
+                    screen = AppScreen.HOME,
                     pinError = null,
                     statusMessage = "PIN сохранён в защищённом хранилище Android"
                 )
@@ -184,8 +248,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
 
         if (pinStore.verifyPin(crawler.id, pin)) {
             failedPinAttempts = 0
+
+            // После успешного PIN открываем Home, а не Dashboard.
             mutablePairing.value = mutablePairing.value.copy(
-                screen = AppScreen.DASHBOARD,
+                screen = AppScreen.HOME,
                 pinError = null,
                 statusMessage = "Доступ разрешён"
             )
@@ -193,6 +259,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
         }
 
         failedPinAttempts += 1
+
         if (failedPinAttempts >= 3) {
             startFiveMinuteLockout()
         } else {
@@ -203,6 +270,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
     private fun startFiveMinuteLockout() {
         failedPinAttempts = 0
         lockoutJob?.cancel()
+
         lockoutJob = viewModelScope.launch {
             for (seconds in 300 downTo 1) {
                 mutablePairing.value = mutablePairing.value.copy(
@@ -226,6 +294,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
         reconnectJob?.cancel()
         bleManager.disconnect()
         selectedBluetoothDevice = null
+
+        // PairingUiState() по умолчанию возвращает SEARCH,
+        // поэтому Splash при ручном отключении не повторяется.
         mutablePairing.value = PairingUiState()
         addSimulator()
     }
@@ -242,11 +313,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
         reconnectJob?.cancel()
         reconnectJob = viewModelScope.launch {
             delay(2_000)
+
             mutablePairing.value = mutablePairing.value.copy(
                 connectionStatus = ConnectionStatus.RECONNECTING,
                 statusMessage = "Переподключение..."
             )
+
             delay(1_000)
+
             mutablePairing.value = mutablePairing.value.copy(
                 connectionStatus = ConnectionStatus.CONNECTED,
                 statusMessage = "Связь восстановлена автоматически"
@@ -262,6 +336,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
 
     override fun onDisconnected(device: BluetoothDevice) {
         if (userRequestedDisconnect) return
+
         mutablePairing.value = mutablePairing.value.copy(
             connectionStatus = ConnectionStatus.LOST,
             statusMessage = "BLE-связь потеряна. Переподключение..."
@@ -271,6 +346,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
 
     override fun onConnectionError(device: BluetoothDevice?) {
         if (userRequestedDisconnect) return
+
         mutablePairing.value = mutablePairing.value.copy(
             connectionStatus = ConnectionStatus.LOST,
             statusMessage = "Ошибка BLE. Выполняется переподключение..."
@@ -280,15 +356,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
 
     private fun scheduleReconnect() {
         reconnectJob?.cancel()
+
         reconnectJob = viewModelScope.launch {
             repeat(5) { attempt ->
                 delay(2_000)
+
                 mutablePairing.value = mutablePairing.value.copy(
                     connectionStatus = ConnectionStatus.RECONNECTING,
                     statusMessage = "Переподключение ${attempt + 1}/5..."
                 )
+
                 bleManager.reconnect()
                 delay(1_500)
+
                 if (mutablePairing.value.connectionStatus == ConnectionStatus.CONNECTED) {
                     return@launch
                 }
@@ -302,9 +382,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
     }
 
     private fun setPinError(message: String) {
-        mutablePairing.value = mutablePairing.value.copy(pinError = message)
+        mutablePairing.value = mutablePairing.value.copy(
+            pinError = message
+        )
     }
 
+    /**
+     * Виртуальный кроулер для разработки интерфейса без оборудования.
+     */
     private fun addSimulator() {
         val simulator = DiscoveredCrawler(
             id = "SIM-LITS-0001",
@@ -321,16 +406,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
     }
 
     fun startManual(direction: Direction) =
-        viewModelScope.launch { transport.startManualMove(direction) }
+        viewModelScope.launch {
+            transport.startManualMove(direction)
+        }
 
     fun stopManual() =
-        viewModelScope.launch { transport.stopManualMove() }
+        viewModelScope.launch {
+            transport.stopManualMove()
+        }
 
     fun startAuto(direction: Direction) =
-        viewModelScope.launch { transport.startAutoMove(direction) }
+        viewModelScope.launch {
+            transport.startAutoMove(direction)
+        }
 
     fun stop() =
-        viewModelScope.launch { transport.stop() }
+        viewModelScope.launch {
+            transport.stop()
+        }
 
     override fun onCleared() {
         bleManager.setListener(null)

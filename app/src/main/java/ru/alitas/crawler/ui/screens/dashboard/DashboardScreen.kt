@@ -38,11 +38,10 @@ import ru.alitas.crawler.ui.theme.LitasMuted
 import ru.alitas.crawler.ui.theme.LitasTheme
 
 /**
- * Главная страница оператора.
+ * Экран непосредственного управления кроулером.
  *
- * В этом файле оставлена только структура страницы.
- * Визуальные блоки находятся в DashboardComponents.kt, поэтому их можно
- * редактировать независимо, не превращая экран в один огромный файл.
+ * Dashboard теперь открывается из HomeMenuScreen и имеет отдельную кнопку
+ * возврата в главное меню.
  */
 @Composable
 fun DashboardScreen(
@@ -55,13 +54,17 @@ fun DashboardScreen(
     onAutoStart: (Direction) -> Unit,
     onStop: () -> Unit,
     onSimulateLoss: () -> Unit,
-    onChooseCrawler: () -> Unit
+    onChooseCrawler: () -> Unit,
+    onHome: () -> Unit
 ) {
     val manualAllowed = controlsEnabled &&
         (telemetry.state == CrawlerState.WAITING || telemetry.state == CrawlerState.STOP)
     val autoAllowed = controlsEnabled && telemetry.state == CrawlerState.STOP
 
-    Surface(color = LitasBackground, modifier = Modifier.fillMaxSize()) {
+    Surface(
+        color = LitasBackground,
+        modifier = Modifier.fillMaxSize()
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -69,7 +72,11 @@ fun DashboardScreen(
                 .padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            DashboardHeroHeader(telemetry, connectionStatus, selectedCrawler)
+            DashboardHeroHeader(
+                telemetry,
+                connectionStatus,
+                selectedCrawler
+            )
 
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -83,7 +90,10 @@ fun DashboardScreen(
                 }
 
                 SectionTitle("ТЕЛЕМЕТРИЯ")
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
                     MetricCard(
                         "Расстояние",
                         "%.1f".format(telemetry.distanceMeters),
@@ -105,8 +115,14 @@ fun DashboardScreen(
                 }
 
                 SectionTitle("ПИТАНИЕ")
-                BatteryCard("Ходовой аккумулятор", telemetry.driveBattery)
-                BatteryCard("Рентгеновский аккумулятор", telemetry.xrayBattery)
+                BatteryCard(
+                    "Ходовой аккумулятор",
+                    telemetry.driveBattery
+                )
+                BatteryCard(
+                    "Рентгеновский аккумулятор",
+                    telemetry.xrayBattery
+                )
 
                 SectionTitle("ДАТЧИКИ БЕЗОПАСНОСТИ")
                 SensorGrid(telemetry)
@@ -128,16 +144,32 @@ fun DashboardScreen(
                 if (selectedCrawler?.isSimulator == true) {
                     OutlinedButton(
                         onClick = onSimulateLoss,
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Text("Симулировать потерю BLE")
                     }
                 }
 
+                // Возврат в новое главное меню без разрыва BLE-соединения.
+                OutlinedButton(
+                    onClick = onHome,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Text("← Главное меню")
+                }
+
+                // Полное отключение от текущего кроулера.
                 OutlinedButton(
                     onClick = onChooseCrawler,
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Text("Отключиться и выбрать кроулер")
@@ -148,8 +180,7 @@ fun DashboardScreen(
 }
 
 /**
- * Панель управления движением вынесена в отдельную функцию,
- * чтобы позже её можно было заменить планшетной компоновкой без затрагивания телеметрии.
+ * Панель ручного и автоматического движения.
  */
 @Composable
 private fun ControlPanel(
@@ -162,12 +193,18 @@ private fun ControlPanel(
     onStop: () -> Unit
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
         shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
     ) {
         Column(
-            Modifier.fillMaxWidth().padding(14.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
@@ -175,44 +212,63 @@ private fun ControlPanel(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Black
             )
+
             Text(
                 "Движение выполняется только пока кнопка удерживается.",
                 color = LitasMuted,
                 style = MaterialTheme.typography.bodyMedium
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 HoldButton(
                     symbol = "↑",
                     label = "Вперёд",
                     enabled = manualAllowed,
                     modifier = Modifier.weight(1f),
-                    onPress = { onManualStart(Direction.FORWARD) },
+                    onPress = {
+                        onManualStart(Direction.FORWARD)
+                    },
                     onRelease = onManualStop
                 )
+
                 HoldButton(
                     symbol = "↓",
                     label = "Назад",
                     enabled = manualAllowed,
                     modifier = Modifier.weight(1f),
-                    onPress = { onManualStart(Direction.BACKWARD) },
+                    onPress = {
+                        onManualStart(Direction.BACKWARD)
+                    },
                     onRelease = onManualStop
                 )
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 OutlinedButton(
-                    onClick = { onAutoStart(Direction.FORWARD) },
+                    onClick = {
+                        onAutoStart(Direction.FORWARD)
+                    },
                     enabled = autoAllowed,
-                    modifier = Modifier.weight(1f).height(50.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp),
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Text("Авто вперёд")
                 }
+
                 OutlinedButton(
-                    onClick = { onAutoStart(Direction.BACKWARD) },
+                    onClick = {
+                        onAutoStart(Direction.BACKWARD)
+                    },
                     enabled = autoAllowed,
-                    modifier = Modifier.weight(1f).height(50.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp),
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Text("Авто назад")
@@ -222,17 +278,30 @@ private fun ControlPanel(
             Button(
                 onClick = onStop,
                 enabled = controlsEnabled,
-                colors = ButtonDefaults.buttonColors(containerColor = LitasDanger),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LitasDanger
+                ),
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.fillMaxWidth().height(72.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
             ) {
-                Text("STOP", fontSize = 28.sp, fontWeight = FontWeight.Black)
+                Text(
+                    "STOP",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Black
+                )
             }
         }
     }
 }
 
-@Preview(name = "Главный экран — телефон", showBackground = true, widthDp = 412, heightDp = 915)
+@Preview(
+    name = "Управление — телефон",
+    showBackground = true,
+    widthDp = 412,
+    heightDp = 915
+)
 @Composable
 private fun DashboardPhonePreview() {
     LitasTheme {
@@ -246,17 +315,25 @@ private fun DashboardPhonePreview() {
             onAutoStart = {},
             onStop = {},
             onSimulateLoss = {},
-            onChooseCrawler = {}
+            onChooseCrawler = {},
+            onHome = {}
         )
     }
 }
 
-@Preview(name = "Главный экран — планшет", showBackground = true, widthDp = 1280, heightDp = 800)
+@Preview(
+    name = "Управление — планшет",
+    showBackground = true,
+    widthDp = 1280,
+    heightDp = 800
+)
 @Composable
 private fun DashboardTabletPreview() {
     LitasTheme {
         DashboardScreen(
-            telemetry = PreviewTelemetry.copy(state = CrawlerState.MOVING),
+            telemetry = PreviewTelemetry.copy(
+                state = CrawlerState.MOVING
+            ),
             connectionStatus = ConnectionStatus.CONNECTED,
             selectedCrawler = PreviewSimulatorCrawler,
             controlsEnabled = true,
@@ -265,26 +342,38 @@ private fun DashboardTabletPreview() {
             onAutoStart = {},
             onStop = {},
             onSimulateLoss = {},
-            onChooseCrawler = {}
+            onChooseCrawler = {},
+            onHome = {}
         )
     }
 }
 
-@Preview(name = "Главный экран — потеря связи", showBackground = true, widthDp = 412, heightDp = 915)
+@Preview(
+    name = "Управление — потеря связи",
+    showBackground = true,
+    widthDp = 412,
+    heightDp = 915
+)
 @Composable
 private fun DashboardLostPreview() {
     LitasTheme {
         DashboardScreen(
-            telemetry = PreviewTelemetry.copy(state = CrawlerState.WAITING, connected = false),
+            telemetry = PreviewTelemetry.copy(
+                state = CrawlerState.WAITING,
+                connected = false
+            ),
             connectionStatus = ConnectionStatus.LOST,
-            selectedCrawler = PreviewSimulatorCrawler.copy(rssi = -98),
+            selectedCrawler = PreviewSimulatorCrawler.copy(
+                rssi = -98
+            ),
             controlsEnabled = true,
             onManualStart = {},
             onManualStop = {},
             onAutoStart = {},
             onStop = {},
             onSimulateLoss = {},
-            onChooseCrawler = {}
+            onChooseCrawler = {},
+            onHome = {}
         )
     }
 }
