@@ -12,18 +12,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
@@ -53,227 +59,456 @@ fun DashboardScreen(
         (telemetry.state == CrawlerState.WAITING || telemetry.state == CrawlerState.STOP)
     val autoAllowed = controlsEnabled && telemetry.state == CrawlerState.STOP
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        ConnectionCard(connectionStatus, selectedCrawler)
+    Surface(color = AlitasBackground, modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            HeroHeader(telemetry, connectionStatus, selectedCrawler)
 
-        Card(shape = RoundedCornerShape(22.dp)) {
             Column(
-                Modifier
-                    .fillMaxWidth()
-                    .background(AlitasBlueDark)
-                    .padding(20.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Text("АЛИТАС", color = Color.White, fontSize = 25.sp, fontWeight = FontWeight.Black)
-                Text("СОСТОЯНИЕ КРОУЛЕРА", color = Color(0xFFBFD2FF), fontSize = 12.sp)
-                Text(
-                    text = stateLabel(telemetry.state),
-                    color = Color.White,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Black
-                )
-                Text(
-                    selectedCrawler?.let { it.name + " · " + it.serialNumber }
-                        ?: telemetry.name + " · " + telemetry.serialNumber,
-                    color = Color(0xFFDCE7FF)
-                )
-                Text("RSSI: ${selectedCrawler?.rssi ?: telemetry.bleRssiDbm} dBm", color = Color.White)
+                if (!controlsEnabled) {
+                    WarningCard(
+                        "Реальное BLE-соединение установлено",
+                        "Управляющие команды отключены до согласования UUID и протокола Контроллера."
+                    )
+                }
+
+                SectionTitle("ТЕЛЕМЕТРИЯ")
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    MetricCard(
+                        title = "Расстояние",
+                        value = "%.1f".format(telemetry.distanceMeters),
+                        unit = "м",
+                        modifier = Modifier.weight(1f)
+                    )
+                    MetricCard(
+                        title = "Крен",
+                        value = "%.1f".format(telemetry.rollDeg),
+                        unit = "°",
+                        modifier = Modifier.weight(1f)
+                    )
+                    MetricCard(
+                        title = "Тангаж",
+                        value = "%.1f".format(telemetry.pitchDeg),
+                        unit = "°",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                SectionTitle("ПИТАНИЕ")
+                BatteryCard("Ходовой аккумулятор", telemetry.driveBattery)
+                BatteryCard("Рентгеновский аккумулятор", telemetry.xrayBattery)
+
+                SectionTitle("ДАТЧИКИ БЕЗОПАСНОСТИ")
+                SensorGrid(telemetry)
+
+                SectionTitle("УПРАВЛЕНИЕ")
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        Modifier.fillMaxWidth().padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            "Ручное движение",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Black
+                        )
+                        Text(
+                            "Движение выполняется только пока кнопка удерживается.",
+                            color = AlitasMuted,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            HoldButton(
+                                symbol = "↑",
+                                label = "Вперёд",
+                                enabled = manualAllowed,
+                                modifier = Modifier.weight(1f),
+                                onPress = { onManualStart(Direction.FORWARD) },
+                                onRelease = onManualStop
+                            )
+                            HoldButton(
+                                symbol = "↓",
+                                label = "Назад",
+                                enabled = manualAllowed,
+                                modifier = Modifier.weight(1f),
+                                onPress = { onManualStart(Direction.BACKWARD) },
+                                onRelease = onManualStop
+                            )
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            OutlinedButton(
+                                onClick = { onAutoStart(Direction.FORWARD) },
+                                enabled = autoAllowed,
+                                modifier = Modifier.weight(1f).height(50.dp),
+                                shape = RoundedCornerShape(14.dp)
+                            ) { Text("Авто вперёд") }
+
+                            OutlinedButton(
+                                onClick = { onAutoStart(Direction.BACKWARD) },
+                                enabled = autoAllowed,
+                                modifier = Modifier.weight(1f).height(50.dp),
+                                shape = RoundedCornerShape(14.dp)
+                            ) { Text("Авто назад") }
+                        }
+
+                        Button(
+                            onClick = onStop,
+                            enabled = controlsEnabled,
+                            colors = ButtonDefaults.buttonColors(containerColor = AlitasDanger),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier.fillMaxWidth().height(72.dp)
+                        ) {
+                            Text("STOP", fontSize = 28.sp, fontWeight = FontWeight.Black)
+                        }
+                    }
+                }
+
+                SectionTitle("РЕНТГЕНОВСКИЙ АППАРАТ")
+                XRayCard(telemetry)
+
+                if (selectedCrawler?.isSimulator == true) {
+                    OutlinedButton(
+                        onClick = onSimulateLoss,
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(14.dp)
+                    ) { Text("Симулировать потерю BLE") }
+                }
+
+                OutlinedButton(
+                    onClick = onChooseCrawler,
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Text("Отключиться и выбрать кроулер")
+                }
             }
         }
+    }
+}
 
-        if (!controlsEnabled) {
-            Card {
+@Composable
+private fun HeroHeader(
+    telemetry: CrawlerTelemetry,
+    connectionStatus: ConnectionStatus,
+    selectedCrawler: DiscoveredCrawler?
+) {
+    val connected = connectionStatus == ConnectionStatus.CONNECTED
+    val stateColor = when (telemetry.state) {
+        CrawlerState.STOP -> AlitasDanger
+        CrawlerState.MOVING -> AlitasCyan
+        CrawlerState.EXPOSURE -> AlitasWarning
+        CrawlerState.CALIBRATION -> Color(0xFF7D5CE7)
+        CrawlerState.WAITING -> Color(0xFF91A3BD)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                Brush.verticalGradient(
+                    listOf(AlitasBlueDark, Color(0xFF123F8D))
+                )
+            )
+            .padding(horizontal = 18.dp, vertical = 20.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column {
+                    Text(
+                        "АЛИТАС",
+                        color = Color.White,
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.5.sp
+                    )
+                    Text(
+                        selectedCrawler?.name ?: telemetry.name,
+                        color = Color(0xFFD5E3FF),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        selectedCrawler?.serialNumber ?: telemetry.serialNumber,
+                        color = Color(0xFFAFC6F4),
+                        fontSize = 12.sp
+                    )
+                }
+
+                ConnectionPill(
+                    connectionStatus,
+                    selectedCrawler?.rssi ?: telemetry.bleRssiDbm
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    Modifier
+                        .size(14.dp)
+                        .background(stateColor, RoundedCornerShape(14.dp))
+                )
+                Column {
+                    Text(
+                        "СОСТОЯНИЕ КРОУЛЕРА",
+                        color = Color(0xFFAFC6F4),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        stateLabel(telemetry.state),
+                        color = Color.White,
+                        fontSize = 34.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+            }
+
+            if (!connected) {
                 Text(
-                    "Реальное BLE-соединение установлено, но управляющие команды отключены до согласования UUID и протокола Контроллера.",
-                    modifier = Modifier.padding(16.dp),
-                    color = AlitasDanger,
+                    connectionLabel(connectionStatus),
+                    color = Color(0xFFFFD29B),
                     fontWeight = FontWeight.Bold
                 )
             }
         }
-
-        Metric("Расстояние", "%.1f м".format(telemetry.distanceMeters))
-        Metric("Крен / тангаж", "%.1f° / %.1f°".format(telemetry.rollDeg, telemetry.pitchDeg))
-        Battery("Ходовой аккумулятор", telemetry.driveBattery)
-        Battery("Рентгеновский аккумулятор", telemetry.xrayBattery)
-
-        Text("Датчики безопасности", fontWeight = FontWeight.Black)
-        Sensor("Начало трубы", telemetry.sensors.pipeStart)
-        Sensor("Конец трубы", telemetry.sensors.pipeEnd)
-        Sensor("Вода", telemetry.sensors.water)
-        Sensor("Препятствие", telemetry.sensors.obstacle)
-
-        Text("Ручное управление", fontWeight = FontWeight.Black)
-
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            HoldButton(
-                "↑",
-                "Вперёд",
-                manualAllowed,
-                Modifier.weight(1f),
-                { onManualStart(Direction.FORWARD) },
-                onManualStop
-            )
-            HoldButton(
-                "↓",
-                "Назад",
-                manualAllowed,
-                Modifier.weight(1f),
-                { onManualStart(Direction.BACKWARD) },
-                onManualStop
-            )
-        }
-
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            OutlinedButton(
-                onClick = { onAutoStart(Direction.FORWARD) },
-                enabled = autoAllowed,
-                modifier = Modifier.weight(1f)
-            ) { Text("Авто вперёд") }
-
-            OutlinedButton(
-                onClick = { onAutoStart(Direction.BACKWARD) },
-                enabled = autoAllowed,
-                modifier = Modifier.weight(1f)
-            ) { Text("Авто назад") }
-        }
-
-        Button(
-            onClick = onStop,
-            enabled = controlsEnabled,
-            colors = ButtonDefaults.buttonColors(containerColor = AlitasDanger),
-            modifier = Modifier.fillMaxWidth().height(74.dp)
-        ) {
-            Text("STOP", fontSize = 28.sp, fontWeight = FontWeight.Black)
-        }
-
-        if (selectedCrawler?.isSimulator == true) {
-            OutlinedButton(
-                onClick = onSimulateLoss,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Симулировать потерю BLE")
-            }
-        }
-
-        OutlinedButton(
-            onClick = onChooseCrawler,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Отключиться и выбрать кроулер")
-        }
-
-        Card {
-            Column(Modifier.padding(16.dp)) {
-                Text("РЕНТГЕНОВСКИЙ АППАРАТ", color = Color.Gray, fontSize = 12.sp)
-                Text("Готов", color = AlitasSuccess, fontSize = 25.sp, fontWeight = FontWeight.Black)
-                Text(telemetry.xrayKv.toString() + " кВ · " + telemetry.xrayMa + " мА")
-                Spacer(Modifier.height(8.dp))
-                Text("Экспозиция будет добавлена отдельным этапом с двухшаговым подтверждением.")
-            }
-        }
     }
 }
 
 @Composable
-private fun ConnectionCard(
-    status: ConnectionStatus,
-    crawler: DiscoveredCrawler?
+private fun ConnectionPill(status: ConnectionStatus, rssi: Int) {
+    val connected = status == ConnectionStatus.CONNECTED
+    val bg = if (connected) Color(0xFF103D34) else Color(0xFF5D2C32)
+    val dot = if (connected) Color(0xFF63E6BE) else Color(0xFFFF8A8A)
+
+    Row(
+        modifier = Modifier
+            .background(bg, RoundedCornerShape(50.dp))
+            .padding(horizontal = 11.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(7.dp)
+    ) {
+        Box(Modifier.size(8.dp).background(dot, RoundedCornerShape(8.dp)))
+        Text(
+            if (connected) "$rssi dBm" else connectionLabel(status),
+            color = Color.White,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text,
+        color = AlitasMuted,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Black,
+        letterSpacing = 0.8.sp
+    )
+}
+
+@Composable
+private fun MetricCard(
+    title: String,
+    value: String,
+    unit: String,
+    modifier: Modifier = Modifier
 ) {
-    val text = when (status) {
-        ConnectionStatus.DISCONNECTED -> "Отключено"
-        ConnectionStatus.SCANNING -> "Поиск..."
-        ConnectionStatus.CONNECTING -> "Подключение..."
-        ConnectionStatus.CONNECTED -> "BLE подключено"
-        ConnectionStatus.RECONNECTING -> "Переподключение..."
-        ConnectionStatus.LOST -> "Связь потеряна"
-    }
-
-    val color = when (status) {
-        ConnectionStatus.CONNECTED -> AlitasSuccess
-        ConnectionStatus.LOST, ConnectionStatus.DISCONNECTED -> AlitasDanger
-        else -> AlitasBlue
-    }
-
-    Card {
-        Row(
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(18.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
             Modifier.fillMaxWidth().padding(14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
-            Column {
-                Text(text, color = color, fontWeight = FontWeight.Black)
-                crawler?.let { Text(it.serialNumber, fontSize = 12.sp) }
+            Text(title, color = AlitasMuted, fontSize = 12.sp)
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(value, fontSize = 22.sp, fontWeight = FontWeight.Black, color = AlitasInk)
+                Spacer(Modifier.width(3.dp))
+                Text(unit, color = AlitasMuted, fontSize = 12.sp)
             }
-            Text(if (crawler?.isSimulator == true) "SIM" else "BLE", fontWeight = FontWeight.Bold)
         }
     }
 }
 
 @Composable
-private fun Metric(label: String, value: String) {
-    Card {
-        Row(
+private fun BatteryCard(title: String, value: BatteryTelemetry) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(18.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
             Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(label)
-            Text(value, fontWeight = FontWeight.Black)
-        }
-    }
-}
-
-@Composable
-private fun Battery(title: String, value: BatteryTelemetry) {
-    Card {
-        Column(Modifier.padding(16.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(title, fontWeight = FontWeight.Bold)
-                Text(value.soc.toString() + "%", color = AlitasBlue, fontWeight = FontWeight.Black)
-            }
-            Spacer(Modifier.height(8.dp))
-            LinearProgressIndicator(
-                progress = { value.soc / 100f },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Text(
-                "%.1f В · %.1f А · %d °C".format(
-                    value.voltage,
-                    value.current,
-                    value.temperature
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(title, fontWeight = FontWeight.Black)
+                    Text(
+                        "%.1f В · %.1f А · %d °C".format(
+                            value.voltage,
+                            value.current,
+                            value.temperature
+                        ),
+                        color = AlitasMuted,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Text(
+                    "${value.soc}%",
+                    color = batteryColor(value.soc),
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Black
                 )
+            }
+
+            LinearProgressIndicator(
+                progress = { value.soc.coerceIn(0, 100) / 100f },
+                modifier = Modifier.fillMaxWidth().height(8.dp),
+                color = batteryColor(value.soc),
+                trackColor = Color(0xFFE8EDF5)
             )
         }
     }
 }
 
 @Composable
-private fun Sensor(label: String, active: Boolean) {
-    Card {
+private fun SensorGrid(telemetry: CrawlerTelemetry) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SensorCard("Начало трубы", telemetry.sensors.pipeStart, Modifier.weight(1f))
+            SensorCard("Конец трубы", telemetry.sensors.pipeEnd, Modifier.weight(1f))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SensorCard("Вода", telemetry.sensors.water, Modifier.weight(1f))
+            SensorCard("Препятствие", telemetry.sensors.obstacle, Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun SensorCard(label: String, active: Boolean, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = if (active) Color(0xFFFFEEEE) else Color.White
+        ),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
         Row(
-            Modifier.fillMaxWidth().padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
+            Modifier.fillMaxWidth().padding(13.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(9.dp)
         ) {
             Box(
                 Modifier
-                    .size(10.dp)
+                    .size(11.dp)
                     .background(
                         if (active) AlitasDanger else AlitasSuccess,
-                        RoundedCornerShape(10.dp)
+                        RoundedCornerShape(11.dp)
                     )
             )
-            Spacer(Modifier.size(10.dp))
-            Text(label, Modifier.weight(1f))
+            Column {
+                Text(label, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text(
+                    if (active) "СРАБОТАЛ" else "Норма",
+                    color = if (active) AlitasDanger else AlitasSuccess,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WarningCard(title: String, message: String) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF2E8)),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(Modifier.fillMaxWidth().padding(15.dp)) {
+            Text(title, color = AlitasWarning, fontWeight = FontWeight.Black)
+            Text(message, color = AlitasInk, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@Composable
+private fun XRayCard(telemetry: CrawlerTelemetry) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(20.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            Modifier.fillMaxWidth().padding(17.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("Состояние", color = AlitasMuted, fontSize = 12.sp)
+                    Text(
+                        "Готов",
+                        color = AlitasSuccess,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    MiniValue("${telemetry.xrayKv}", "кВ")
+                    MiniValue("${telemetry.xrayMa}", "мА")
+                }
+            }
+
             Text(
-                if (active) "СРАБОТАЛ" else "Норма",
-                color = if (active) AlitasDanger else AlitasSuccess,
-                fontWeight = FontWeight.Bold
+                "Экспозиция будет добавлена отдельным этапом с двухшаговым подтверждением.",
+                color = AlitasMuted,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
+    }
+}
+
+@Composable
+private fun MiniValue(value: String, unit: String) {
+    Column(horizontalAlignment = Alignment.End) {
+        Text(value, fontSize = 19.sp, fontWeight = FontWeight.Black)
+        Text(unit, color = AlitasMuted, fontSize = 11.sp)
     }
 }
 
@@ -288,10 +523,15 @@ private fun HoldButton(
 ) {
     Box(
         modifier = modifier
-            .height(126.dp)
+            .height(118.dp)
+            .shadow(2.dp, RoundedCornerShape(18.dp))
             .background(
-                if (enabled) AlitasBlue else Color(0xFFB8C0CC),
-                RoundedCornerShape(18.dp)
+                brush = if (enabled) {
+                    Brush.verticalGradient(listOf(AlitasBlue, Color(0xFF164DB1)))
+                } else {
+                    Brush.verticalGradient(listOf(Color(0xFFB9C2D0), Color(0xFFAAB5C4)))
+                },
+                shape = RoundedCornerShape(18.dp)
             )
             .pointerInput(enabled) {
                 if (!enabled) return@pointerInput
@@ -310,8 +550,8 @@ private fun HoldButton(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(symbol, color = Color.White, fontSize = 34.sp, fontWeight = FontWeight.Black)
-            Text(label, color = Color.White, fontSize = 19.sp, fontWeight = FontWeight.Black)
-            Text("УДЕРЖИВАТЬ", color = Color(0xFFD9E5FF), fontSize = 10.sp)
+            Text(label, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Black)
+            Text("УДЕРЖИВАТЬ", color = Color(0xFFD8E6FF), fontSize = 10.sp)
         }
     }
 }
@@ -322,4 +562,19 @@ private fun stateLabel(state: CrawlerState): String = when (state) {
     CrawlerState.MOVING -> "Движение"
     CrawlerState.EXPOSURE -> "Экспозиция"
     CrawlerState.CALIBRATION -> "Калибровка"
+}
+
+private fun connectionLabel(status: ConnectionStatus): String = when (status) {
+    ConnectionStatus.DISCONNECTED -> "Отключено"
+    ConnectionStatus.SCANNING -> "Поиск"
+    ConnectionStatus.CONNECTING -> "Подключение"
+    ConnectionStatus.CONNECTED -> "Подключено"
+    ConnectionStatus.RECONNECTING -> "Переподключение"
+    ConnectionStatus.LOST -> "Связь потеряна"
+}
+
+private fun batteryColor(soc: Int): Color = when {
+    soc >= 50 -> AlitasSuccess
+    soc >= 20 -> AlitasWarning
+    else -> AlitasDanger
 }
