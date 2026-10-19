@@ -1,4 +1,4 @@
-package ru.alitas.crawler.ui
+package ru.alitas.crawler.ui.screens.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -7,23 +7,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,169 +32,23 @@ import ru.alitas.crawler.domain.BatteryTelemetry
 import ru.alitas.crawler.domain.ConnectionStatus
 import ru.alitas.crawler.domain.CrawlerState
 import ru.alitas.crawler.domain.CrawlerTelemetry
-import ru.alitas.crawler.domain.Direction
 import ru.alitas.crawler.domain.DiscoveredCrawler
+import ru.alitas.crawler.ui.theme.LitasBlue
+import ru.alitas.crawler.ui.theme.LitasBlueDark
+import ru.alitas.crawler.ui.theme.LitasCyan
+import ru.alitas.crawler.ui.theme.LitasDanger
+import ru.alitas.crawler.ui.theme.LitasInk
+import ru.alitas.crawler.ui.theme.LitasMuted
+import ru.alitas.crawler.ui.theme.LitasSuccess
+import ru.alitas.crawler.ui.theme.LitasWarning
+
+/**
+ * Компоненты главного экрана вынесены отдельно, чтобы DashboardScreen.kt
+ * оставался коротким и отвечал только за компоновку страницы.
+ */
 
 @Composable
-fun DashboardScreen(
-    telemetry: CrawlerTelemetry,
-    connectionStatus: ConnectionStatus,
-    selectedCrawler: DiscoveredCrawler?,
-    controlsEnabled: Boolean,
-    onManualStart: (Direction) -> Unit,
-    onManualStop: () -> Unit,
-    onAutoStart: (Direction) -> Unit,
-    onStop: () -> Unit,
-    onSimulateLoss: () -> Unit,
-    onChooseCrawler: () -> Unit
-) {
-    val manualAllowed = controlsEnabled &&
-        (telemetry.state == CrawlerState.WAITING || telemetry.state == CrawlerState.STOP)
-    val autoAllowed = controlsEnabled && telemetry.state == CrawlerState.STOP
-
-    Surface(color = LitasBackground, modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            HeroHeader(telemetry, connectionStatus, selectedCrawler)
-
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                if (!controlsEnabled) {
-                    WarningCard(
-                        "Реальное BLE-соединение установлено",
-                        "Управляющие команды отключены до согласования UUID и протокола Контроллера."
-                    )
-                }
-
-                SectionTitle("ТЕЛЕМЕТРИЯ")
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    MetricCard(
-                        title = "Расстояние",
-                        value = "%.1f".format(telemetry.distanceMeters),
-                        unit = "м",
-                        modifier = Modifier.weight(1f)
-                    )
-                    MetricCard(
-                        title = "Крен",
-                        value = "%.1f".format(telemetry.rollDeg),
-                        unit = "°",
-                        modifier = Modifier.weight(1f)
-                    )
-                    MetricCard(
-                        title = "Тангаж",
-                        value = "%.1f".format(telemetry.pitchDeg),
-                        unit = "°",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                SectionTitle("ПИТАНИЕ")
-                BatteryCard("Ходовой аккумулятор", telemetry.driveBattery)
-                BatteryCard("Рентгеновский аккумулятор", telemetry.xrayBattery)
-
-                SectionTitle("ДАТЧИКИ БЕЗОПАСНОСТИ")
-                SensorGrid(telemetry)
-
-                SectionTitle("УПРАВЛЕНИЕ")
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        Modifier.fillMaxWidth().padding(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            "Ручное движение",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Black
-                        )
-                        Text(
-                            "Движение выполняется только пока кнопка удерживается.",
-                            color = LitasMuted,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            HoldButton(
-                                symbol = "↑",
-                                label = "Вперёд",
-                                enabled = manualAllowed,
-                                modifier = Modifier.weight(1f),
-                                onPress = { onManualStart(Direction.FORWARD) },
-                                onRelease = onManualStop
-                            )
-                            HoldButton(
-                                symbol = "↓",
-                                label = "Назад",
-                                enabled = manualAllowed,
-                                modifier = Modifier.weight(1f),
-                                onPress = { onManualStart(Direction.BACKWARD) },
-                                onRelease = onManualStop
-                            )
-                        }
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            OutlinedButton(
-                                onClick = { onAutoStart(Direction.FORWARD) },
-                                enabled = autoAllowed,
-                                modifier = Modifier.weight(1f).height(50.dp),
-                                shape = RoundedCornerShape(14.dp)
-                            ) { Text("Авто вперёд") }
-
-                            OutlinedButton(
-                                onClick = { onAutoStart(Direction.BACKWARD) },
-                                enabled = autoAllowed,
-                                modifier = Modifier.weight(1f).height(50.dp),
-                                shape = RoundedCornerShape(14.dp)
-                            ) { Text("Авто назад") }
-                        }
-
-                        Button(
-                            onClick = onStop,
-                            enabled = controlsEnabled,
-                            colors = ButtonDefaults.buttonColors(containerColor = LitasDanger),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.fillMaxWidth().height(72.dp)
-                        ) {
-                            Text("STOP", fontSize = 28.sp, fontWeight = FontWeight.Black)
-                        }
-                    }
-                }
-
-                SectionTitle("РЕНТГЕНОВСКИЙ АППАРАТ")
-                XRayCard(telemetry)
-
-                if (selectedCrawler?.isSimulator == true) {
-                    OutlinedButton(
-                        onClick = onSimulateLoss,
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        shape = RoundedCornerShape(14.dp)
-                    ) { Text("Симулировать потерю BLE") }
-                }
-
-                OutlinedButton(
-                    onClick = onChooseCrawler,
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text("Отключиться и выбрать кроулер")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun HeroHeader(
+internal fun DashboardHeroHeader(
     telemetry: CrawlerTelemetry,
     connectionStatus: ConnectionStatus,
     selectedCrawler: DiscoveredCrawler?
@@ -274,7 +121,7 @@ private fun HeroHeader(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        stateLabel(telemetry.state),
+                        crawlerStateLabel(telemetry.state),
                         color = Color.White,
                         fontSize = 34.sp,
                         fontWeight = FontWeight.Black
@@ -284,7 +131,7 @@ private fun HeroHeader(
 
             if (!connected) {
                 Text(
-                    connectionLabel(connectionStatus),
+                    connectionStatusLabel(connectionStatus),
                     color = Color(0xFFFFD29B),
                     fontWeight = FontWeight.Bold
                 )
@@ -308,7 +155,7 @@ private fun ConnectionPill(status: ConnectionStatus, rssi: Int) {
     ) {
         Box(Modifier.size(8.dp).background(dot, RoundedCornerShape(8.dp)))
         Text(
-            if (connected) "$rssi dBm" else connectionLabel(status),
+            if (connected) "$rssi dBm" else connectionStatusLabel(status),
             color = Color.White,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold
@@ -317,7 +164,7 @@ private fun ConnectionPill(status: ConnectionStatus, rssi: Int) {
 }
 
 @Composable
-private fun SectionTitle(text: String) {
+internal fun SectionTitle(text: String) {
     Text(
         text,
         color = LitasMuted,
@@ -328,7 +175,7 @@ private fun SectionTitle(text: String) {
 }
 
 @Composable
-private fun MetricCard(
+internal fun MetricCard(
     title: String,
     value: String,
     unit: String,
@@ -355,7 +202,7 @@ private fun MetricCard(
 }
 
 @Composable
-private fun BatteryCard(title: String, value: BatteryTelemetry) {
+internal fun BatteryCard(title: String, value: BatteryTelemetry) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(18.dp),
@@ -382,6 +229,7 @@ private fun BatteryCard(title: String, value: BatteryTelemetry) {
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+
                 Text(
                     "${value.soc}%",
                     color = batteryColor(value.soc),
@@ -401,7 +249,7 @@ private fun BatteryCard(title: String, value: BatteryTelemetry) {
 }
 
 @Composable
-private fun SensorGrid(telemetry: CrawlerTelemetry) {
+internal fun SensorGrid(telemetry: CrawlerTelemetry) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SensorCard("Начало трубы", telemetry.sensors.pipeStart, Modifier.weight(1f))
@@ -437,6 +285,7 @@ private fun SensorCard(label: String, active: Boolean, modifier: Modifier = Modi
                         RoundedCornerShape(11.dp)
                     )
             )
+
             Column {
                 Text(label, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Text(
@@ -451,7 +300,7 @@ private fun SensorCard(label: String, active: Boolean, modifier: Modifier = Modi
 }
 
 @Composable
-private fun WarningCard(title: String, message: String) {
+internal fun WarningCard(title: String, message: String) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF2E8)),
         shape = RoundedCornerShape(16.dp)
@@ -464,7 +313,7 @@ private fun WarningCard(title: String, message: String) {
 }
 
 @Composable
-private fun XRayCard(telemetry: CrawlerTelemetry) {
+internal fun XRayCard(telemetry: CrawlerTelemetry) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(20.dp),
@@ -512,8 +361,12 @@ private fun MiniValue(value: String, unit: String) {
     }
 }
 
+/**
+ * Кнопка ручного движения.
+ * onPress вызывается при нажатии, onRelease гарантированно вызывается при отпускании.
+ */
 @Composable
-private fun HoldButton(
+internal fun HoldButton(
     symbol: String,
     label: String,
     enabled: Boolean,
@@ -556,7 +409,7 @@ private fun HoldButton(
     }
 }
 
-private fun stateLabel(state: CrawlerState): String = when (state) {
+private fun crawlerStateLabel(state: CrawlerState): String = when (state) {
     CrawlerState.WAITING -> "Ожидание"
     CrawlerState.STOP -> "Стоп"
     CrawlerState.MOVING -> "Движение"
@@ -564,7 +417,7 @@ private fun stateLabel(state: CrawlerState): String = when (state) {
     CrawlerState.CALIBRATION -> "Калибровка"
 }
 
-private fun connectionLabel(status: ConnectionStatus): String = when (status) {
+private fun connectionStatusLabel(status: ConnectionStatus): String = when (status) {
     ConnectionStatus.DISCONNECTED -> "Отключено"
     ConnectionStatus.SCANNING -> "Поиск"
     ConnectionStatus.CONNECTING -> "Подключение"

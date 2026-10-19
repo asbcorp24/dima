@@ -1,4 +1,4 @@
-package ru.alitas.crawler.ui
+package ru.alitas.crawler.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
@@ -9,6 +9,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+/**
+ * Единая палитра приложения ЛИТАС.
+ *
+ * Все новые экраны должны использовать эти цвета вместо собственных hardcoded-цветов.
+ * Так тему можно менять централизованно без поиска значений по всему проекту.
+ */
 val LitasBlue = Color(0xFF1B5ED7)
 val LitasBlueDark = Color(0xFF0B2E68)
 val LitasBlueSoft = Color(0xFFEAF2FF)
@@ -47,6 +53,11 @@ private val AppTypography = Typography(
     labelLarge = TextStyle(fontSize = 14.sp, lineHeight = 18.sp, fontWeight = FontWeight.Bold)
 )
 
+/**
+ * Корневая Material-тема приложения.
+ *
+ * Оборачивайте ей Preview и корневой setContent.
+ */
 @Composable
 fun LitasTheme(content: @Composable () -> Unit) {
     MaterialTheme(

@@ -12,12 +12,23 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.alitas.crawler.domain.AppScreen
-import ru.alitas.crawler.ui.LitasTheme
-import ru.alitas.crawler.ui.DashboardScreen
-import ru.alitas.crawler.ui.PinSetupScreen
-import ru.alitas.crawler.ui.PinUnlockScreen
-import ru.alitas.crawler.ui.SearchCrawlerScreen
+import ru.alitas.crawler.ui.screens.dashboard.DashboardScreen
+import ru.alitas.crawler.ui.screens.pin.PinSetupScreen
+import ru.alitas.crawler.ui.screens.pin.PinUnlockScreen
+import ru.alitas.crawler.ui.screens.search.SearchCrawlerScreen
+import ru.alitas.crawler.ui.theme.LitasTheme
 
+/**
+ * Единственная Activity приложения.
+ *
+ * Здесь находится только связывание ViewModel с экранами:
+ * - получаем состояние;
+ * - запрашиваем разрешения Android;
+ * - выбираем текущую страницу;
+ * - передаём callback-функции в UI.
+ *
+ * Сами страницы лежат отдельно в ui/screens и могут редактироваться независимо.
+ */
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,9 +37,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             LitasTheme {
                 val vm: MainViewModel = viewModel()
+
+                // Состояние оборудования и подключения подписано на lifecycle Activity.
                 val telemetry by vm.telemetry.collectAsStateWithLifecycle()
                 val pairing by vm.pairing.collectAsStateWithLifecycle()
 
+                // Набор разрешений отличается на Android 12+ и старых версиях.
                 val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     arrayOf(
                         Manifest.permission.BLUETOOTH_SCAN,
@@ -38,6 +52,7 @@ class MainActivity : ComponentActivity() {
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
                 }
 
+                // После выдачи разрешений автоматически запускаем поиск BLE.
                 val permissionLauncher = rememberLauncherForActivityResult(
                     ActivityResultContracts.RequestMultiplePermissions()
                 ) { result ->
@@ -48,6 +63,8 @@ class MainActivity : ComponentActivity() {
                     permissionLauncher.launch(permissions)
                 }
 
+                // Простая маршрутизация приложения.
+                // Новую страницу можно добавить в AppScreen и подключить здесь.
                 when (pairing.screen) {
                     AppScreen.SEARCH -> SearchCrawlerScreen(
                         state = pairing,

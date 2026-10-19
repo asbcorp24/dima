@@ -1,4 +1,4 @@
-package ru.alitas.crawler.ui
+package ru.alitas.crawler.ui.templates
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,16 +11,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ru.alitas.crawler.ui.theme.LitasBackground
+import ru.alitas.crawler.ui.theme.LitasMuted
+import ru.alitas.crawler.ui.theme.LitasTheme
 
 /**
- * Шаблон новой страницы ЛИТАС.
+ * Шаблон для создания новой страницы.
  *
- * Как использовать:
- * 1. Скопируйте файл.
- * 2. Переименуйте NewScreenTemplate -> имя вашей страницы.
- * 3. Добавьте нужные параметры состояния и callback-функции.
- * 4. Оставьте Preview для телефона и планшета.
- * 5. Не вызывайте здесь BLE/ViewModel напрямую — передавайте готовые данные параметрами.
+ * Рекомендуемый порядок:
+ * 1. Скопировать файл в ui/screens/<имя_раздела>/.
+ * 2. Переименовать NewScreenTemplate в имя страницы.
+ * 3. Передавать состояние параметрами, а действия — callback-функциями.
+ * 4. Не обращаться к BLE, ViewModel и хранилищам прямо из UI.
+ * 5. Оставить Preview для телефона и планшета.
+ *
+ * Такой подход делает экран независимым и позволяет легко менять дизайн.
  */
 @Composable
 fun NewScreenTemplate(
@@ -49,18 +54,13 @@ fun NewScreenTemplate(
                 color = LitasMuted
             )
 
-            // TODO: добавьте элементы интерфейса страницы.
-            // TODO: onAction вызывайте из кнопки/контрола, когда добавите действие.
+            // TODO: Добавьте элементы интерфейса этой страницы.
+            // TODO: onAction передавайте в кнопку/контрол, когда появится действие.
         }
     }
 }
 
-@Preview(
-    name = "Шаблон — телефон",
-    showBackground = true,
-    widthDp = 412,
-    heightDp = 915
-)
+@Preview(name = "Шаблон — телефон", showBackground = true, widthDp = 412, heightDp = 915)
 @Composable
 private fun NewScreenTemplatePhonePreview() {
     LitasTheme {
@@ -71,12 +71,7 @@ private fun NewScreenTemplatePhonePreview() {
     }
 }
 
-@Preview(
-    name = "Шаблон — планшет landscape",
-    showBackground = true,
-    widthDp = 1280,
-    heightDp = 800
-)
+@Preview(name = "Шаблон — планшет", showBackground = true, widthDp = 1280, heightDp = 800)
 @Composable
 private fun NewScreenTemplateTabletPreview() {
     LitasTheme {

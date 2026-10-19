@@ -31,3 +31,31 @@ UUID сервисов/характеристик и пакетный прото�
 - крупная STOP-кнопка;
 - mock-контроллер;
 - native BLE scan/Coded PHY заготовка.
+
+
+## Структура UI
+
+Интерфейс разделён по страницам, чтобы проект было проще редактировать и масштабировать:
+
+```text
+ui/
+├── components/              # Переиспользуемые UI-компоненты
+│   └── PairingComponents.kt
+├── preview/                 # Общие тестовые данные для Compose Preview
+│   └── PreviewData.kt
+├── screens/                 # Каждая страница в отдельной папке/файле
+│   ├── dashboard/
+│   │   ├── DashboardScreen.kt
+│   │   └── DashboardComponents.kt
+│   ├── pin/
+│   │   ├── PinSetupScreen.kt
+│   │   └── PinUnlockScreen.kt
+│   └── search/
+│       └── SearchCrawlerScreen.kt
+├── templates/
+│   └── NewScreenTemplate.kt
+└── theme/
+    └── LitasTheme.kt
+```
+
+Правило для новых страниц: UI получает состояние параметрами и сообщает о действиях через callback-функции. BLE, хранилища и бизнес-логика остаются во ViewModel/data-слое. У каждой страницы должен быть собственный Compose Preview.
