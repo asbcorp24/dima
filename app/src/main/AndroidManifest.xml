@@ -9,8 +9,8 @@
 
     <application
         android:allowBackup="false"
-        android:label="АЛИТАС Кроулер"
-        android:theme="@style/Theme.AlitasCrawler">
+        android:label="ЛИТАС Кроулер"
+        android:theme="@style/Theme.LitasCrawler">
         <activity
             android:name=".MainActivity"
             android:exported="true">

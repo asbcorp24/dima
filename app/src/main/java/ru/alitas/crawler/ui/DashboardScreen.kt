@@ -59,7 +59,7 @@ fun DashboardScreen(
         (telemetry.state == CrawlerState.WAITING || telemetry.state == CrawlerState.STOP)
     val autoAllowed = controlsEnabled && telemetry.state == CrawlerState.STOP
 
-    Surface(color = AlitasBackground, modifier = Modifier.fillMaxSize()) {
+    Surface(color = LitasBackground, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -126,7 +126,7 @@ fun DashboardScreen(
                         )
                         Text(
                             "Движение выполняется только пока кнопка удерживается.",
-                            color = AlitasMuted,
+                            color = LitasMuted,
                             style = MaterialTheme.typography.bodyMedium
                         )
 
@@ -168,7 +168,7 @@ fun DashboardScreen(
                         Button(
                             onClick = onStop,
                             enabled = controlsEnabled,
-                            colors = ButtonDefaults.buttonColors(containerColor = AlitasDanger),
+                            colors = ButtonDefaults.buttonColors(containerColor = LitasDanger),
                             shape = RoundedCornerShape(16.dp),
                             modifier = Modifier.fillMaxWidth().height(72.dp)
                         ) {
@@ -208,9 +208,9 @@ private fun HeroHeader(
 ) {
     val connected = connectionStatus == ConnectionStatus.CONNECTED
     val stateColor = when (telemetry.state) {
-        CrawlerState.STOP -> AlitasDanger
-        CrawlerState.MOVING -> AlitasCyan
-        CrawlerState.EXPOSURE -> AlitasWarning
+        CrawlerState.STOP -> LitasDanger
+        CrawlerState.MOVING -> LitasCyan
+        CrawlerState.EXPOSURE -> LitasWarning
         CrawlerState.CALIBRATION -> Color(0xFF7D5CE7)
         CrawlerState.WAITING -> Color(0xFF91A3BD)
     }
@@ -220,7 +220,7 @@ private fun HeroHeader(
             .fillMaxWidth()
             .background(
                 Brush.verticalGradient(
-                    listOf(AlitasBlueDark, Color(0xFF123F8D))
+                    listOf(LitasBlueDark, Color(0xFF123F8D))
                 )
             )
             .padding(horizontal = 18.dp, vertical = 20.dp)
@@ -233,7 +233,7 @@ private fun HeroHeader(
             ) {
                 Column {
                     Text(
-                        "АЛИТАС",
+                        "ЛИТАС",
                         color = Color.White,
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Black,
@@ -320,7 +320,7 @@ private fun ConnectionPill(status: ConnectionStatus, rssi: Int) {
 private fun SectionTitle(text: String) {
     Text(
         text,
-        color = AlitasMuted,
+        color = LitasMuted,
         fontSize = 12.sp,
         fontWeight = FontWeight.Black,
         letterSpacing = 0.8.sp
@@ -344,11 +344,11 @@ private fun MetricCard(
             Modifier.fillMaxWidth().padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
-            Text(title, color = AlitasMuted, fontSize = 12.sp)
+            Text(title, color = LitasMuted, fontSize = 12.sp)
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(value, fontSize = 22.sp, fontWeight = FontWeight.Black, color = AlitasInk)
+                Text(value, fontSize = 22.sp, fontWeight = FontWeight.Black, color = LitasInk)
                 Spacer(Modifier.width(3.dp))
-                Text(unit, color = AlitasMuted, fontSize = 12.sp)
+                Text(unit, color = LitasMuted, fontSize = 12.sp)
             }
         }
     }
@@ -378,7 +378,7 @@ private fun BatteryCard(title: String, value: BatteryTelemetry) {
                             value.current,
                             value.temperature
                         ),
-                        color = AlitasMuted,
+                        color = LitasMuted,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -433,7 +433,7 @@ private fun SensorCard(label: String, active: Boolean, modifier: Modifier = Modi
                 Modifier
                     .size(11.dp)
                     .background(
-                        if (active) AlitasDanger else AlitasSuccess,
+                        if (active) LitasDanger else LitasSuccess,
                         RoundedCornerShape(11.dp)
                     )
             )
@@ -441,7 +441,7 @@ private fun SensorCard(label: String, active: Boolean, modifier: Modifier = Modi
                 Text(label, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 Text(
                     if (active) "СРАБОТАЛ" else "Норма",
-                    color = if (active) AlitasDanger else AlitasSuccess,
+                    color = if (active) LitasDanger else LitasSuccess,
                     fontWeight = FontWeight.Bold,
                     fontSize = 11.sp
                 )
@@ -457,8 +457,8 @@ private fun WarningCard(title: String, message: String) {
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(Modifier.fillMaxWidth().padding(15.dp)) {
-            Text(title, color = AlitasWarning, fontWeight = FontWeight.Black)
-            Text(message, color = AlitasInk, style = MaterialTheme.typography.bodyMedium)
+            Text(title, color = LitasWarning, fontWeight = FontWeight.Black)
+            Text(message, color = LitasInk, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -480,10 +480,10 @@ private fun XRayCard(telemetry: CrawlerTelemetry) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text("Состояние", color = AlitasMuted, fontSize = 12.sp)
+                    Text("Состояние", color = LitasMuted, fontSize = 12.sp)
                     Text(
                         "Готов",
-                        color = AlitasSuccess,
+                        color = LitasSuccess,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black
                     )
@@ -497,7 +497,7 @@ private fun XRayCard(telemetry: CrawlerTelemetry) {
 
             Text(
                 "Экспозиция будет добавлена отдельным этапом с двухшаговым подтверждением.",
-                color = AlitasMuted,
+                color = LitasMuted,
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -508,7 +508,7 @@ private fun XRayCard(telemetry: CrawlerTelemetry) {
 private fun MiniValue(value: String, unit: String) {
     Column(horizontalAlignment = Alignment.End) {
         Text(value, fontSize = 19.sp, fontWeight = FontWeight.Black)
-        Text(unit, color = AlitasMuted, fontSize = 11.sp)
+        Text(unit, color = LitasMuted, fontSize = 11.sp)
     }
 }
 
@@ -527,7 +527,7 @@ private fun HoldButton(
             .shadow(2.dp, RoundedCornerShape(18.dp))
             .background(
                 brush = if (enabled) {
-                    Brush.verticalGradient(listOf(AlitasBlue, Color(0xFF164DB1)))
+                    Brush.verticalGradient(listOf(LitasBlue, Color(0xFF164DB1)))
                 } else {
                     Brush.verticalGradient(listOf(Color(0xFFB9C2D0), Color(0xFFAAB5C4)))
                 },
@@ -574,7 +574,7 @@ private fun connectionLabel(status: ConnectionStatus): String = when (status) {
 }
 
 private fun batteryColor(soc: Int): Color = when {
-    soc >= 50 -> AlitasSuccess
-    soc >= 20 -> AlitasWarning
-    else -> AlitasDanger
+    soc >= 50 -> LitasSuccess
+    soc >= 20 -> LitasWarning
+    else -> LitasDanger
 }

@@ -9,31 +9,31 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-val AlitasBlue = Color(0xFF1B5ED7)
-val AlitasBlueDark = Color(0xFF0B2E68)
-val AlitasBlueSoft = Color(0xFFEAF2FF)
-val AlitasCyan = Color(0xFF25A7E8)
-val AlitasDanger = Color(0xFFD63B3B)
-val AlitasWarning = Color(0xFFE59A19)
-val AlitasSuccess = Color(0xFF148760)
-val AlitasInk = Color(0xFF11233F)
-val AlitasMuted = Color(0xFF64748B)
-val AlitasBorder = Color(0xFFDCE4F0)
-val AlitasBackground = Color(0xFFF3F6FB)
+val LitasBlue = Color(0xFF1B5ED7)
+val LitasBlueDark = Color(0xFF0B2E68)
+val LitasBlueSoft = Color(0xFFEAF2FF)
+val LitasCyan = Color(0xFF25A7E8)
+val LitasDanger = Color(0xFFD63B3B)
+val LitasWarning = Color(0xFFE59A19)
+val LitasSuccess = Color(0xFF148760)
+val LitasInk = Color(0xFF11233F)
+val LitasMuted = Color(0xFF64748B)
+val LitasBorder = Color(0xFFDCE4F0)
+val LitasBackground = Color(0xFFF3F6FB)
 
 private val Colors = lightColorScheme(
-    primary = AlitasBlue,
+    primary = LitasBlue,
     onPrimary = Color.White,
-    primaryContainer = AlitasBlueSoft,
-    onPrimaryContainer = AlitasBlueDark,
-    secondary = AlitasCyan,
-    background = AlitasBackground,
+    primaryContainer = LitasBlueSoft,
+    onPrimaryContainer = LitasBlueDark,
+    secondary = LitasCyan,
+    background = LitasBackground,
     surface = Color.White,
     surfaceVariant = Color(0xFFF7F9FC),
-    onBackground = AlitasInk,
-    onSurface = AlitasInk,
-    onSurfaceVariant = AlitasMuted,
-    error = AlitasDanger
+    onBackground = LitasInk,
+    onSurface = LitasInk,
+    onSurfaceVariant = LitasMuted,
+    error = LitasDanger
 )
 
 private val AppTypography = Typography(
@@ -48,7 +48,7 @@ private val AppTypography = Typography(
 )
 
 @Composable
-fun AlitasTheme(content: @Composable () -> Unit) {
+fun LitasTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = Colors,
         typography = AppTypography,

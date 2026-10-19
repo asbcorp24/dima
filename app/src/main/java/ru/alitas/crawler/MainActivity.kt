@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ru.alitas.crawler.domain.AppScreen
-import ru.alitas.crawler.ui.AlitasTheme
+import ru.alitas.crawler.ui.LitasTheme
 import ru.alitas.crawler.ui.DashboardScreen
 import ru.alitas.crawler.ui.PinSetupScreen
 import ru.alitas.crawler.ui.PinUnlockScreen
@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            AlitasTheme {
+            LitasTheme {
                 val vm: MainViewModel = viewModel()
                 val telemetry by vm.telemetry.collectAsStateWithLifecycle()
                 val pairing by vm.pairing.collectAsStateWithLifecycle()

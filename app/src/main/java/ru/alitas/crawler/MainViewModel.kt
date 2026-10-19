@@ -307,9 +307,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application),
 
     private fun addSimulator() {
         val simulator = DiscoveredCrawler(
-            id = "SIM-ALTS-0001",
-            name = "АЛИТАС Simulator",
-            serialNumber = "ALTS-CR-0001",
+            id = "SIM-LITS-0001",
+            name = "ЛИТАС Simulator",
+            serialNumber = "LITS-CR-0001",
             rssi = -42,
             isSimulator = true
         )

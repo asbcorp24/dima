@@ -51,7 +51,7 @@ fun SearchCrawlerScreen(
     onStopScan: () -> Unit,
     onSelect: (DiscoveredCrawler) -> Unit
 ) {
-    Surface(color = AlitasBackground, modifier = Modifier.fillMaxSize()) {
+    Surface(color = LitasBackground, modifier = Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             BrandHeader("Подключение", "Найдите и выберите BLE-кроулер")
 
@@ -77,7 +77,7 @@ fun SearchCrawlerScreen(
 
                 Text(
                     "ДОСТУПНЫЕ УСТРОЙСТВА",
-                    color = AlitasMuted,
+                    color = LitasMuted,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp
                 )
@@ -101,12 +101,12 @@ private fun BrandHeader(title: String, subtitle: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Brush.horizontalGradient(listOf(AlitasBlueDark, AlitasBlue)))
+            .background(Brush.horizontalGradient(listOf(LitasBlueDark, LitasBlue)))
             .padding(horizontal = 20.dp, vertical = 22.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                "АЛИТАС",
+                "ЛИТАС",
                 color = Color.White,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Black,
@@ -124,7 +124,7 @@ private fun StatusBanner(state: PairingUiState) {
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = if (scanning) AlitasBlueSoft else Color.White
+            containerColor = if (scanning) LitasBlueSoft else Color.White
         ),
         shape = RoundedCornerShape(16.dp),
         border = CardDefaults.outlinedCardBorder()
@@ -139,7 +139,7 @@ private fun StatusBanner(state: PairingUiState) {
             } else {
                 Box(
                     Modifier.size(12.dp)
-                        .background(AlitasSuccess, RoundedCornerShape(12.dp))
+                        .background(LitasSuccess, RoundedCornerShape(12.dp))
                 )
             }
 
@@ -150,7 +150,7 @@ private fun StatusBanner(state: PairingUiState) {
                 )
                 Text(
                     state.statusMessage ?: "Выберите устройство из списка ниже",
-                    color = AlitasMuted,
+                    color = LitasMuted,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -170,11 +170,11 @@ private fun EmptyDevices() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text("BLE", color = AlitasBlue, fontSize = 28.sp, fontWeight = FontWeight.Black)
+            Text("BLE", color = LitasBlue, fontSize = 28.sp, fontWeight = FontWeight.Black)
             Text("Устройства пока не найдены", fontWeight = FontWeight.Bold)
             Text(
                 "Нажмите «Найти устройства» и убедитесь, что Bluetooth включён.",
-                color = AlitasMuted,
+                color = LitasMuted,
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -198,14 +198,14 @@ private fun CrawlerDeviceCard(device: DiscoveredCrawler, onClick: () -> Unit) {
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        if (device.isSimulator) Color(0xFFEAF8F2) else AlitasBlueSoft,
+                        if (device.isSimulator) Color(0xFFEAF8F2) else LitasBlueSoft,
                         RoundedCornerShape(14.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     if (device.isSimulator) "SIM" else "BLE",
-                    color = if (device.isSimulator) AlitasSuccess else AlitasBlue,
+                    color = if (device.isSimulator) LitasSuccess else LitasBlue,
                     fontWeight = FontWeight.Black,
                     fontSize = 12.sp
                 )
@@ -213,9 +213,9 @@ private fun CrawlerDeviceCard(device: DiscoveredCrawler, onClick: () -> Unit) {
 
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(device.name, fontWeight = FontWeight.Black, fontSize = 17.sp)
-                Text(device.serialNumber, color = AlitasMuted, fontSize = 13.sp)
+                Text(device.serialNumber, color = LitasMuted, fontSize = 13.sp)
                 if (device.isSimulator) {
-                    Text("Режим симуляции", color = AlitasSuccess, fontWeight = FontWeight.Bold)
+                    Text("Режим симуляции", color = LitasSuccess, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -225,7 +225,7 @@ private fun CrawlerDeviceCard(device: DiscoveredCrawler, onClick: () -> Unit) {
                     fontWeight = FontWeight.Bold,
                     color = signalColor(device.rssi)
                 )
-                Text("Подключить ›", color = AlitasBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text("Подключить ›", color = LitasBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         }
     }
@@ -282,7 +282,7 @@ fun PinUnlockScreen(
         Text("Введите PIN", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
         Text(
             "Для управления кроулером требуется подтверждение доступа.",
-            color = AlitasMuted
+            color = LitasMuted
         )
 
         PinField("5-значный PIN", pin, enabled = !state.isLockedOut) {
@@ -319,7 +319,7 @@ private fun PinContainer(
     onBack: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    Surface(color = AlitasBackground, modifier = Modifier.fillMaxSize()) {
+    Surface(color = LitasBackground, modifier = Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             BrandHeader(title, subtitle)
 
@@ -357,8 +357,8 @@ private fun PinContainer(
 
 @Composable
 private fun InfoBox(title: String, text: String, danger: Boolean = false) {
-    val background = if (danger) Color(0xFFFFEEEE) else AlitasBlueSoft
-    val accent = if (danger) AlitasDanger else AlitasBlue
+    val background = if (danger) Color(0xFFFFEEEE) else LitasBlueSoft
+    val accent = if (danger) LitasDanger else LitasBlue
 
     Card(
         colors = CardDefaults.cardColors(containerColor = background),
@@ -366,7 +366,7 @@ private fun InfoBox(title: String, text: String, danger: Boolean = false) {
     ) {
         Column(Modifier.fillMaxWidth().padding(14.dp)) {
             Text(title, color = accent, fontWeight = FontWeight.Black)
-            Text(text, color = AlitasInk, style = MaterialTheme.typography.bodyMedium)
+            Text(text, color = LitasInk, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -387,8 +387,8 @@ private fun PinField(
         visualTransformation = PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = AlitasBlue,
-            focusedLabelColor = AlitasBlue
+            focusedBorderColor = LitasBlue,
+            focusedLabelColor = LitasBlue
         ),
         shape = RoundedCornerShape(14.dp),
         modifier = Modifier.fillMaxWidth()
@@ -396,7 +396,7 @@ private fun PinField(
 }
 
 private fun signalColor(rssi: Int): Color = when {
-    rssi >= -60 -> AlitasSuccess
-    rssi >= -80 -> AlitasWarning
-    else -> AlitasDanger
+    rssi >= -60 -> LitasSuccess
+    rssi >= -80 -> LitasWarning
+    else -> LitasDanger
 }
