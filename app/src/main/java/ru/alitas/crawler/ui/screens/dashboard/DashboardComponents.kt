@@ -248,6 +248,70 @@ internal fun BatteryCard(title: String, value: BatteryTelemetry) {
     }
 }
 
+
+@Composable
+internal fun CompactBatteryCard(
+    title: String,
+    value: BatteryTelemetry,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0B1524)),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                title,
+                color = Color(0xFF8BA1BF),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Text(
+                    "\${value.soc}%",
+                    color = batteryColor(value.soc),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Black
+                )
+
+                Text(
+                    "%.1f В".format(value.voltage),
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            LinearProgressIndicator(
+                progress = { value.soc.coerceIn(0, 100) / 100f },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(7.dp),
+                color = batteryColor(value.soc),
+                trackColor = Color(0xFF20314A)
+            )
+
+            Text(
+                "%.1f А · %d °C".format(value.current, value.temperature),
+                color = LitasMuted,
+                fontSize = 11.sp
+            )
+        }
+    }
+}
+
+
 @Composable
 internal fun SensorGrid(telemetry: CrawlerTelemetry) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

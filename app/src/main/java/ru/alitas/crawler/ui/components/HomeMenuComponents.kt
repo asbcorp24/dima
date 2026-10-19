@@ -208,6 +208,7 @@ fun HomeMenuCard(
  */
 @Composable
 fun HomeBottomBar(
+    active: String = "home",
     onHome: () -> Unit,
     onControl: () -> Unit,
     onLogs: () -> Unit,
@@ -222,10 +223,10 @@ fun HomeBottomBar(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            BottomNavigationItem("Главная", "◆", true, onHome)
-            BottomNavigationItem("Управление", "▶", false, onControl)
-            BottomNavigationItem("Журнал", "▤", false, onLogs)
-            BottomNavigationItem("Ещё", "•••", false, onMore)
+            BottomNavigationItem("Главная", "◆", active == "home", onHome)
+            BottomNavigationItem("Управление", "▶", active == "control", onControl)
+            BottomNavigationItem("Журнал", "▤", active == "logs", onLogs)
+            BottomNavigationItem("Ещё", "•••", active == "more", onMore)
         }
     }
 }

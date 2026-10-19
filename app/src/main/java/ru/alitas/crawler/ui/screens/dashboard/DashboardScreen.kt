@@ -1,12 +1,15 @@
 package ru.alitas.crawler.ui.screens.dashboard
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -20,6 +23,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,6 +34,7 @@ import ru.alitas.crawler.domain.CrawlerState
 import ru.alitas.crawler.domain.CrawlerTelemetry
 import ru.alitas.crawler.domain.Direction
 import ru.alitas.crawler.domain.DiscoveredCrawler
+import ru.alitas.crawler.ui.components.HomeBottomBar
 import ru.alitas.crawler.ui.preview.PreviewSimulatorCrawler
 import ru.alitas.crawler.ui.preview.PreviewTelemetry
 import ru.alitas.crawler.ui.theme.LitasDanger
@@ -37,10 +42,18 @@ import ru.alitas.crawler.ui.theme.LitasMuted
 import ru.alitas.crawler.ui.theme.LitasTheme
 
 /**
- * Экран непосредственного управления кроулером.
+ * Основной экран управления кроулером.
  *
- * Dashboard теперь открывается из HomeMenuScreen и имеет отдельную кнопку
- * возврата в главное меню.
+ * Экран построен так, чтобы оператор сразу видел:
+ * - состояние связи;
+ * - состояние кроулера;
+ * - основную телеметрию;
+ * - заряд обоих аккумуляторов;
+ * - датчики безопасности;
+ * - органы ручного и автоматического управления;
+ * - состояние рентгеновского узла.
+ *
+ * Нижняя навигация закреплена отдельно от прокручиваемого содержимого.
  */
 @Composable
 fun DashboardScreen(
@@ -54,125 +67,162 @@ fun DashboardScreen(
     onStop: () -> Unit,
     onSimulateLoss: () -> Unit,
     onChooseCrawler: () -> Unit,
-    onHome: () -> Unit
+    onHome: () -> Unit,
+    onLogs: () -> Unit,
+    onMore: () -> Unit
 ) {
     val manualAllowed = controlsEnabled &&
         (telemetry.state == CrawlerState.WAITING || telemetry.state == CrawlerState.STOP)
+
     val autoAllowed = controlsEnabled && telemetry.state == CrawlerState.STOP
 
     Surface(
-        color = Color(0xFF030817),
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFF030817)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF020612),
+                            Color(0xFF041027),
+                            Color(0xFF07152C)
+                        )
+                    )
+                )
         ) {
-            DashboardHeroHeader(
-                telemetry,
-                connectionStatus,
-                selectedCrawler
-            )
-
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                if (!controlsEnabled) {
-                    WarningCard(
-                        "Реальное BLE-соединение установлено",
-                        "Управляющие команды отключены до согласования UUID и протокола Контроллера."
-                    )
-                }
+                DashboardHeroHeader(
+                    telemetry = telemetry,
+                    connectionStatus = connectionStatus,
+                    selectedCrawler = selectedCrawler
+                )
 
-                SectionTitle("ТЕЛЕМЕТРИЯ")
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+                    if (!controlsEnabled) {
+                        WarningCard(
+                            "Реальное BLE-соединение установлено",
+                            "Управляющие команды отключены до согласования UUID и протокола контроллера."
+                        )
+                    }
+
+                    SectionTitle("ТЕЛЕМЕТРИЯ")
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        MetricCard(
+                            "Расстояние",
+                            "%.1f".format(telemetry.distanceMeters),
+                            "м",
+                            Modifier.weight(1f)
+                        )
+
+                        MetricCard(
+                            "Крен",
+                            "%.1f".format(telemetry.rollDeg),
+                            "°",
+                            Modifier.weight(1f)
+                        )
+
+                        MetricCard(
+                            "Тангаж",
+                            "%.1f".format(telemetry.pitchDeg),
+                            "°",
+                            Modifier.weight(1f)
+                        )
+                    }
+
                     MetricCard(
-                        "Расстояние",
-                        "%.1f".format(telemetry.distanceMeters),
-                        "м",
-                        Modifier.weight(1f)
+                        title = "Тормоз",
+                        value = telemetry.brakePercent.toString(),
+                        unit = "%",
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    MetricCard(
-                        "Крен",
-                        "%.1f".format(telemetry.rollDeg),
-                        "°",
-                        Modifier.weight(1f)
+
+                    SectionTitle("ПИТАНИЕ")
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        CompactBatteryCard(
+                            title = "Ходовой",
+                            value = telemetry.driveBattery,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        CompactBatteryCard(
+                            title = "Рентген",
+                            value = telemetry.xrayBattery,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    SectionTitle("ДАТЧИКИ БЕЗОПАСНОСТИ")
+                    SensorGrid(telemetry)
+
+                    SectionTitle("УПРАВЛЕНИЕ")
+
+                    ControlPanel(
+                        manualAllowed = manualAllowed,
+                        autoAllowed = autoAllowed,
+                        controlsEnabled = controlsEnabled,
+                        onManualStart = onManualStart,
+                        onManualStop = onManualStop,
+                        onAutoStart = onAutoStart,
+                        onStop = onStop
                     )
-                    MetricCard(
-                        "Тангаж",
-                        "%.1f".format(telemetry.pitchDeg),
-                        "°",
-                        Modifier.weight(1f)
-                    )
-                }
 
-                SectionTitle("ПИТАНИЕ")
-                BatteryCard(
-                    "Ходовой аккумулятор",
-                    telemetry.driveBattery
-                )
-                BatteryCard(
-                    "Рентгеновский аккумулятор",
-                    telemetry.xrayBattery
-                )
+                    SectionTitle("РЕНТГЕНОВСКИЙ АППАРАТ")
+                    XRayCard(telemetry)
 
-                SectionTitle("ДАТЧИКИ БЕЗОПАСНОСТИ")
-                SensorGrid(telemetry)
+                    if (selectedCrawler?.isSimulator == true) {
+                        OutlinedButton(
+                            onClick = onSimulateLoss,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Text("Симулировать потерю BLE")
+                        }
+                    }
 
-                SectionTitle("УПРАВЛЕНИЕ")
-                ControlPanel(
-                    manualAllowed = manualAllowed,
-                    autoAllowed = autoAllowed,
-                    controlsEnabled = controlsEnabled,
-                    onManualStart = onManualStart,
-                    onManualStop = onManualStop,
-                    onAutoStart = onAutoStart,
-                    onStop = onStop
-                )
-
-                SectionTitle("РЕНТГЕНОВСКИЙ АППАРАТ")
-                XRayCard(telemetry)
-
-                if (selectedCrawler?.isSimulator == true) {
                     OutlinedButton(
-                        onClick = onSimulateLoss,
+                        onClick = onChooseCrawler,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
                         shape = RoundedCornerShape(14.dp)
                     ) {
-                        Text("Симулировать потерю BLE")
+                        Text("Отключиться и выбрать кроулер")
                     }
                 }
+            }
 
-                // Возврат в новое главное меню без разрыва BLE-соединения.
-                OutlinedButton(
-                    onClick = onHome,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text("← Главное меню")
-                }
-
-                // Полное отключение от текущего кроулера.
-                OutlinedButton(
-                    onClick = onChooseCrawler,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Text("Отключиться и выбрать кроулер")
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+            ) {
+                HomeBottomBar(
+                    active = "control",
+                    onHome = onHome,
+                    onControl = {},
+                    onLogs = onLogs,
+                    onMore = onMore
+                )
             }
         }
     }
@@ -180,6 +230,8 @@ fun DashboardScreen(
 
 /**
  * Панель ручного и автоматического движения.
+ *
+ * Ручные кнопки работают только во время удержания.
  */
 @Composable
 private fun ControlPanel(
@@ -195,13 +247,10 @@ private fun ControlPanel(
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF0B1524)
         ),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp
-        )
+        shape = RoundedCornerShape(22.dp)
     ) {
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -316,7 +365,9 @@ private fun DashboardPhonePreview() {
             onStop = {},
             onSimulateLoss = {},
             onChooseCrawler = {},
-            onHome = {}
+            onHome = {},
+            onLogs = {},
+            onMore = {}
         )
     }
 }
@@ -343,37 +394,9 @@ private fun DashboardTabletPreview() {
             onStop = {},
             onSimulateLoss = {},
             onChooseCrawler = {},
-            onHome = {}
-        )
-    }
-}
-
-@Preview(
-    name = "Управление — потеря связи",
-    showBackground = true,
-    widthDp = 412,
-    heightDp = 915
-)
-@Composable
-private fun DashboardLostPreview() {
-    LitasTheme {
-        DashboardScreen(
-            telemetry = PreviewTelemetry.copy(
-                state = CrawlerState.WAITING,
-                connected = false
-            ),
-            connectionStatus = ConnectionStatus.LOST,
-            selectedCrawler = PreviewSimulatorCrawler.copy(
-                rssi = -98
-            ),
-            controlsEnabled = true,
-            onManualStart = {},
-            onManualStop = {},
-            onAutoStart = {},
-            onStop = {},
-            onSimulateLoss = {},
-            onChooseCrawler = {},
-            onHome = {}
+            onHome = {},
+            onLogs = {},
+            onMore = {}
         )
     }
 }

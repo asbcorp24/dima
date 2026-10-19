@@ -126,7 +126,9 @@ class MainActivity : ComponentActivity() {
                             onStop = vm::stop,
                             onSimulateLoss = vm::simulateSignalLoss,
                             onChooseCrawler = vm::backToSearch,
-                            onHome = vm::openHome
+                            onHome = vm::openHome,
+                            onLogs = vm::openLogs,
+                            onMore = vm::openMore
                         )
                     }
 
